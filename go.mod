@@ -11,7 +11,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/puppetlabs/pct/docs/md v0.0.0-20220422101006-289589bd4d5d
-	github.com/rs/zerolog v1.27.0
+	github.com/rs/zerolog v1.34.0
 	github.com/spf13/afero v1.8.2
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/viper v1.11.0
@@ -40,8 +40,8 @@ require (
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
-	github.com/mattn/go-colorable v0.1.12 // indirect
-	github.com/mattn/go-isatty v0.0.14 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.17 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
@@ -63,7 +63,7 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.7.0 // indirect
 	go.opentelemetry.io/proto/otlp v0.16.0 // indirect
 	golang.org/x/net v0.0.0-20220412020605-290c469a71a5 // indirect
-	golang.org/x/sys v0.0.0-20220412211240-33da011f77ad // indirect
+	golang.org/x/sys v0.12.0 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20220407144326-9054f6ed7bac // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
