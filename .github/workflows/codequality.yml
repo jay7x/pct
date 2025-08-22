@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
       - name: Snyk Scan for vulnerabilities in dependencies
         uses: snyk/actions/golang@master
         env:
@@ -33,7 +33,7 @@ jobs:
         with:
           go-version: ${{ env.go_version }}
       - name: Check out code
-        uses: actions/checkout@v1
+        uses: actions/checkout@v5
       - name: Run fmt
         run: make format
   mod_tidy:
@@ -45,6 +45,6 @@ jobs:
         with:
           go-version: ${{ env.go_version }}
       - name: Check out code
-        uses: actions/checkout@v1
+        uses: actions/checkout@v5
       - name: Run go mod tidy
         run: make tidy

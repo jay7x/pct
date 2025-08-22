@@ -16,12 +16,12 @@ jobs:
     steps:
       -
         name: Checkout pct
-        uses: actions/checkout@v2
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       -
         name: Checkout PCT Templates
-        uses: actions/checkout@v2
+        uses: actions/checkout@v5
         with:
           repository: puppetlabs/baker-round
           fetch-depth: 1
