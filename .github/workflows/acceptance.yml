@@ -27,7 +27,7 @@ jobs:
       with:
         path: ${{ env.GOPATH }}/src/github.com/${{ github.repository }}
     - name: Set up Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v5
       with:
         go-version: ${{ env.go_version }}
     - name: Build nix
