@@ -22,7 +22,7 @@ if [ "$target" == "build" ]; then
   if [ -z "${HONEYCOMB_DATASET}" ]; then
     export HONEYCOMB_DATASET="not_set"
   fi
-  goreleaser build --snapshot --rm-dist --single-target
+  goreleaser build --snapshot --clean --single-target
   git clone -b main --depth 1 --single-branch https://github.com/puppetlabs/baker-round "$binPath/templates"
   cp -r "$binPath/templates" "$binPath2/templates"
 elif [ "$target" == "quick" ]; then
