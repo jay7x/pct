@@ -11,8 +11,8 @@ before:
     - go fmt ./...
 
 builds:
-  - binary: pct
-    id: pct
+  - id: pct
+    binary: pct
     env:
       - CGO_ENABLED=0
     goos:
@@ -22,71 +22,24 @@ builds:
     goarch:
       - amd64
       - arm64
-    asmflags:
-      - all=-trimpath={{.Env.WORKINGDIR}}
-    gcflags:
-      - all=-trimpath={{.Env.WORKINGDIR}}
+    flags:
+      - -trimpath
     ldflags:
-      - -s -w -X main.version={{.Version}} -X main.commit={{.ShortCommit}} -X main.date={{.CommitDate}} -X main.honeycomb_api_key={{.Env.HONEYCOMB_API_KEY}} -X main.honeycomb_dataset={{.Env.HONEYCOMB_DATASET}}
-    mod_timestamp: '{{ .CommitTimestamp }}'
-    tags:
-      - telemetry
-  - binary: pct
-    id: notel_pct
-    env:
-      - CGO_ENABLED=0
-    goos:
-      - linux
-      - windows
-      - darwin
-    goarch:
-      - amd64
-      - arm64
-    asmflags:
-      - all=-trimpath={{.Env.WORKINGDIR}}
-    gcflags:
-      - all=-trimpath={{.Env.WORKINGDIR}}
-    ldflags:
-      - -s -w -X main.version={{.Version}} -X main.commit={{.ShortCommit}} -X main.date={{.CommitDate}} -X main.honeycomb_api_key={{.Env.HONEYCOMB_API_KEY}} -X main.honeycomb_dataset={{.Env.HONEYCOMB_DATASET}}
-    mod_timestamp: '{{ .CommitTimestamp }}'
+      - -s -w -X main.version={{.Version}} -X main.commit={{.ShortCommit}} -X main.date={{.CommitDate}}
+    mod_timestamp: "{{ .CommitTimestamp }}"
 
 archives:
-  - name_template: >-
-      pct_{{ tolower .Os }}_
-      {{- if eq .Arch "amd64" }}x86_64
-      {{- else if eq .Arch "386" }}i386
-      {{- else }}{{ .Arch }}{{ end }}
-      {{ if .Arm }}v{{ .Arm }}{{ end }}
-      {{ if .Mips }}_{{ .Mips }}{{ end }}
-    id: pct
-    ids:
+  - ids:
       - pct
     wrap_in_directory: false
     format_overrides:
       - goos: windows
-        formats: ['zip']
+        formats: ["zip"]
     files:
       - templates/**/*
-  - name_template: >-
-      notel_pct_{{ tolower .Os }}_
-      {{- if eq .Arch "amd64" }}x86_64
-      {{- else if eq .Arch "386" }}i386
-      {{- else }}{{ .Arch }}{{ end }}
-      {{ if .Arm }}v{{ .Arm }}{{ end }}
-      {{ if .Mips }}_{{ .Mips }}{{ end }}
-    id: notel_pct
-    ids:
-      - notel_pct
-    wrap_in_directory: false
-    format_overrides:
-      - goos: windows
-        formats: ['zip']
-    files:
-      - templates/**/*
-
 
 checksum:
-  name_template: 'checksums.txt'
+  name_template: "checksums.txt"
 
 snapshot:
   version_template: "{{ .Tag }}-{{.ShortCommit}}"
@@ -95,5 +48,5 @@ changelog:
   sort: asc
   filters:
     exclude:
-      - '^docs:'
-      - '^test:'
+      - "^docs:"
+      - "^test:"
