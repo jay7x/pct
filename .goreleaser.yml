@@ -1,3 +1,4 @@
+version: 2
 project_name: pct
 
 release:
@@ -20,7 +21,6 @@ builds:
       - darwin
     goarch:
       - amd64
-      - arm
       - arm64
     asmflags:
       - all=-trimpath={{.Env.WORKINGDIR}}
@@ -41,7 +41,6 @@ builds:
       - darwin
     goarch:
       - amd64
-      - arm
       - arm64
     asmflags:
       - all=-trimpath={{.Env.WORKINGDIR}}
@@ -52,36 +51,36 @@ builds:
     mod_timestamp: '{{ .CommitTimestamp }}'
 
 archives:
-  - name_template: "pct_{{ tolower .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
+  - name_template: >-
+      pct_{{ tolower .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{ if .Arm }}v{{ .Arm }}{{ end }}
+      {{ if .Mips }}_{{ .Mips }}{{ end }}
     id: pct
-    builds:
+    ids:
       - pct
-    replacements:
-      darwin: Darwin
-      linux: Linux
-      windows: Windows
-      386: i386
-      amd64: x86_64
     wrap_in_directory: false
     format_overrides:
       - goos: windows
-        format: zip
+        formats: ['zip']
     files:
       - templates/**/*
-  - name_template: "notel_pct_{{ tolower .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
+  - name_template: >-
+      notel_pct_{{ tolower .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{ if .Arm }}v{{ .Arm }}{{ end }}
+      {{ if .Mips }}_{{ .Mips }}{{ end }}
     id: notel_pct
-    builds:
+    ids:
       - notel_pct
-    replacements:
-      darwin: Darwin
-      linux: Linux
-      windows: Windows
-      386: i386
-      amd64: x86_64
     wrap_in_directory: false
     format_overrides:
       - goos: windows
-        format: zip
+        formats: ['zip']
     files:
       - templates/**/*
 
@@ -90,7 +89,7 @@ checksum:
   name_template: 'checksums.txt'
 
 snapshot:
-  name_template: "{{ .Tag }}-{{.ShortCommit}}"
+  version_template: "{{ .Tag }}-{{.ShortCommit}}"
 
 changelog:
   sort: asc
