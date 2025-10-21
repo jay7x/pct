@@ -1,6 +1,7 @@
 package mock
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 )
@@ -22,7 +23,7 @@ func (e *Exec) Command(name string, arg ...string) error {
 
 func (e *Exec) Output() ([]byte, error) {
 	if e.ResponseError {
-		return nil, fmt.Errorf(e.ResponseMsg)
+		return nil, errors.New(e.ResponseMsg)
 	}
 	return []byte(e.ResponseMsg), nil
 }

@@ -1,6 +1,6 @@
 module github.com/puppetlabs/pct
 
-go 1.18
+go 1.24
 
 require (
 	github.com/charmbracelet/glamour v0.5.0
