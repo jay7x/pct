@@ -2,6 +2,7 @@ package pct_config_processor
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 
 	"github.com/puppetlabs/pct/internal/pkg/pct"
@@ -53,7 +54,7 @@ func (p *PctConfigProcessor) CheckConfig(configFile string) error {
 		msg = msg + "  * version\n"
 	}
 	if msg != orig {
-		return fmt.Errorf(msg)
+		return errors.New(msg)
 	}
 
 	return nil
