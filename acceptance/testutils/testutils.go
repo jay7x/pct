@@ -5,7 +5,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"syscall"
 	"testing"
@@ -54,18 +53,8 @@ func RunCommand(cmdString string, wd string) (stdout string, stderr string, exit
 
 // Wraps RunCommand for App calls, locating the correct binary for the executing OS
 func RunAppCommand(cmdString string, wd string) (stdout string, stderr string, exitCode int) {
-	// where is app built for this current OS?
-	postfix := ""
-	if runtime.GOOS == "windows" {
-		postfix = ".exe"
-	}
-
-	goArch := runtime.GOARCH
-	if goArch == "amd64" {
-		goArch = fmt.Sprintf("%s_v1", runtime.GOARCH)
-	}
-
-	appPath := fmt.Sprintf("../../dist/%s_%s_%s/%s%s", app, runtime.GOOS, goArch, app, postfix)
+	// Always use ../pct.exe for acceptance tests for simplicity
+	appPath := "../../pct.exe"
 	absPath, err := filepath.Abs(appPath)
 
 	if err != nil {
