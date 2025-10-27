@@ -1,6 +1,6 @@
 module github.com/puppetlabs/pct
 
-go 1.24
+go 1.24.0
 
 require (
 	github.com/charmbracelet/glamour v0.10.0
@@ -20,7 +20,7 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.38.0
 	go.opentelemetry.io/otel/sdk v1.38.0
 	go.opentelemetry.io/otel/trace v1.38.0
-	google.golang.org/grpc v1.75.0
+	google.golang.org/grpc v1.76.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
