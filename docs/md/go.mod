@@ -1,3 +1,3 @@
-module github.com/puppetlabs/pct/docs/md
+module github.com/jay7x/pct/docs/md
 
 go 1.17
