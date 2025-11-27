@@ -3,8 +3,8 @@ package explain
 import (
 	"fmt"
 
+	"github.com/jay7x/pct/pkg/docs"
 	"github.com/puppetlabs/pct/docs/md"
-	"github.com/puppetlabs/pct/pkg/docs"
 	"github.com/spf13/cobra"
 )
 

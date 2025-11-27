@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/puppetlabs/pct/internal/pkg/pct"
-	"github.com/puppetlabs/pct/pkg/utils"
+	"github.com/jay7x/pct/internal/pkg/pct"
+	"github.com/jay7x/pct/pkg/utils"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/afero"

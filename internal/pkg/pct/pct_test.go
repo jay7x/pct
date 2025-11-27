@@ -8,9 +8,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/puppetlabs/pct/internal/pkg/pct"
-	"github.com/puppetlabs/pct/pkg/install"
-	"github.com/puppetlabs/pct/pkg/mock"
+	"github.com/jay7x/pct/internal/pkg/pct"
+	"github.com/jay7x/pct/pkg/install"
+	"github.com/jay7x/pct/pkg/mock"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/afero"

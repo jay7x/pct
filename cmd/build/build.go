@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/puppetlabs/pct/pkg/build"
+	"github.com/jay7x/pct/pkg/build"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )

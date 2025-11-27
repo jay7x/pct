@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/puppetlabs/pct/pkg/gzip"
+	"github.com/jay7x/pct/pkg/gzip"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 )

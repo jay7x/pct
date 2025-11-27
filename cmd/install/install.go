@@ -5,8 +5,8 @@ import (
 
 	"github.com/spf13/afero"
 
-	"github.com/puppetlabs/pct/pkg/install"
-	"github.com/puppetlabs/pct/pkg/utils"
+	"github.com/jay7x/pct/pkg/install"
+	"github.com/jay7x/pct/pkg/utils"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
