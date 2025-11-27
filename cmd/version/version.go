@@ -36,7 +36,7 @@ func Format(version, buildDate string, commit string) string {
 		commit = strings.TrimSpace(commit[:len(commit)-length])
 	}
 
-	return fmt.Sprintf("pct %s %s %s\n\n%s",
+	return fmt.Sprintf("pct %s %s %s\n\n%s\n",
 		version, commit, dateStr, changelogURL(version))
 }
 
