@@ -6,10 +6,10 @@ require (
 	github.com/charmbracelet/glamour v0.10.0
 	github.com/gernest/front v0.0.0-20210301115436-8a0b0a782d0a
 	github.com/hashicorp/go-version v1.7.0
+	github.com/jay7x/pct/docs/md v0.0.0-20251127043134-1037de4b9cf0
 	github.com/json-iterator/go v1.1.12
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/puppetlabs/pct/docs/md v0.0.0-20220422101006-289589bd4d5d
 	github.com/rs/zerolog v1.34.0
 	github.com/spf13/afero v1.15.0
 	github.com/spf13/cobra v1.10.1
