@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/puppetlabs/pct/acceptance/testutils"
+	"github.com/jay7x/pct/acceptance/testutils"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v2"

@@ -35,7 +35,7 @@ foreach ($Program in $Programs) {
 if (!(Test-Path -Path ".\docs\site")) {
     git clone https://github.com/puppetlabs/devx.git docs\site
     Push-Location docs\site
-    Add-Content -Path .\go.mod -value 'replace github.com/puppetlabs/pctocs/md => ..\md'
+    Add-Content -Path .\go.mod -value 'replace github.com/jay7x/pct/docs/md => ..\md'
     npm install
 }
 else {

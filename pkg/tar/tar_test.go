@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/puppetlabs/pct/pkg/tar"
+	"github.com/jay7x/pct/pkg/tar"
 	"github.com/spf13/afero"
 )
 

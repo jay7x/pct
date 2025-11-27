@@ -20,10 +20,10 @@ import (
 	"text/template"
 
 	"github.com/hashicorp/go-version"
+	"github.com/jay7x/pct/pkg/install"
+	"github.com/jay7x/pct/pkg/utils"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/olekukonko/tablewriter"
-	"github.com/puppetlabs/pct/pkg/install"
-	"github.com/puppetlabs/pct/pkg/utils"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/afero"
 	"github.com/spf13/viper"

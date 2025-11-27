@@ -24,7 +24,7 @@ fi
 if [ ! -d "docs/site" ]; then
     git clone https://github.com/puppetlabs/devx.git docs/site
     cd docs/site
-    echo "replace github.com/puppetlabs/pct/docs/md => ../md" >> go.mod
+    echo "replace github.com/jay7x/pct/docs/md => ../md" >> go.mod
     npm install
 else
     cd docs/site

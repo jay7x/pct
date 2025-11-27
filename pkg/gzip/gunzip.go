@@ -4,7 +4,7 @@ import (
 	"compress/gzip"
 	"path/filepath"
 
-	"github.com/puppetlabs/pct/pkg/utils"
+	"github.com/jay7x/pct/pkg/utils"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/afero"
 )

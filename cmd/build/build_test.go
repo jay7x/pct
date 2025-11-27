@@ -9,8 +9,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/puppetlabs/pct/cmd/build"
-	"github.com/puppetlabs/pct/pkg/mock"
+	"github.com/jay7x/pct/cmd/build"
+	"github.com/jay7x/pct/pkg/mock"
 )
 
 func TestCreateBuildCommand(t *testing.T) {

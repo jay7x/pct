@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/jay7x/pct/pkg/utils"
 	homedir "github.com/mitchellh/go-homedir"
-	"github.com/puppetlabs/pct/pkg/utils"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"

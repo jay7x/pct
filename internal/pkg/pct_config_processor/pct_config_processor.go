@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/puppetlabs/pct/internal/pkg/pct"
-	"github.com/puppetlabs/pct/pkg/config_processor"
+	"github.com/jay7x/pct/internal/pkg/pct"
+	"github.com/jay7x/pct/pkg/config_processor"
 	"github.com/spf13/afero"
 	"github.com/spf13/viper"
 )

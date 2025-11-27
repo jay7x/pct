@@ -3,7 +3,7 @@ package mock
 import (
 	"fmt"
 
-	"github.com/puppetlabs/pct/pkg/config_processor"
+	"github.com/jay7x/pct/pkg/config_processor"
 )
 
 type InstallConfig struct {

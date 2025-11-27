@@ -1,4 +1,4 @@
-module github.com/puppetlabs/pct
+module github.com/jay7x/pct
 
 go 1.24
 
