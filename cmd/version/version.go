@@ -41,7 +41,7 @@ func Format(version, buildDate string, commit string) string {
 }
 
 func changelogURL(version string) string {
-	path := "https://github.com/puppetlabs/pct"
+	path := "https://github.com/jay7x/pct"
 	r := regexp.MustCompile(`^v?\d+\.\d+\.\d+(-[\w.]+)?$`)
 	if !r.MatchString(version) {
 		return fmt.Sprintf("%s/releases/latest", path)
