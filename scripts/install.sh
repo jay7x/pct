@@ -1,28 +1,20 @@
-#!/bin/sh
+#!/usr/bin/env bash
 set -e
 
 ARCH="x86_64"
 OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 EXT=".tar.gz"
 
-ORG="puppetlabs"
+ORG="jay7x"
 REPO="pct"
-APP="pct"
 APP_PKG_NAME="pct"
 
-NO_TEL=${1:-false}
-
-if [ ${NO_TEL} = "--no-telemetry" ]; then
-  APP_PKG_NAME="notel_pct"
-fi
-
-RELEASES=""
 FILE=""
 CHECKSUM=""
 
 logDebug() {
-  if [ ! -z $PCT_INSTALL_DEBUG ]; then
-    echo $1
+  if [ ! -z "$PCT_INSTALL_DEBUG" ]; then
+    echo "$1"
   fi
 }
 
@@ -31,9 +23,9 @@ getChecksums() {
     FILE="${APP_PKG_NAME}_${OS}_${ARCH}${EXT}"
     checksumURL="https://github.com/${ORG}/${REPO}/releases/latest/download/checksums.txt"
     resp=$(curl -Ls "${checksumURL}" -o /tmp/pct_checksums.txt --write-out "%{http_code}")
-    respCode=$(echo ${resp} | tail -n 1)
+    respCode=$(echo "${resp}" | tail -n 1)
     logDebug "GET ${checksumURL} | Resp: ${resp}"
-    if [ ${respCode} -ne 200 ]; then
+    if [ "${respCode}" -ne 200 ]; then
       echo "Fetching checksums.txt failed on attempt ${i}, retrying..."
       sleep 5
     else
@@ -48,48 +40,44 @@ getChecksums() {
 downloadLatestRelease() {
   destination="${HOME}/.puppetlabs/pct"
 
-  [ -d ${destination} ] || mkdir -p ${destination} ]
+  [ -d "${destination}" ] || mkdir -p "${destination}"
 
-  if [ "${noTel}" = "--no-telemetry" ]; then
-      echo "Downloading and extracting ${APP_PKG_NAME} (TELEMETRY DISABLED VERSION) to ${destination}"
-  else
-      echo "Downloading and extracting ${APP_PKG_NAME} to ${destination}"
-  fi
+  echo "Downloading and extracting ${APP_PKG_NAME} to ${destination}"
 
   downloadURL="https://github.com/${ORG}/${REPO}/releases/latest/download/${FILE}"
 
   for i in {1..5}; do
-    resp=$(curl -Ls ${downloadURL} -o /tmp/${FILE} --write-out "%{http_code}")
-    respCode=$(echo ${resp} | tail -n 1)
+    resp=$(curl -Ls "${downloadURL}" -o "/tmp/${FILE}" --write-out "%{http_code}")
+    respCode=$(echo "${resp}" | tail -n 1)
     logDebug "GET ${downloadURL} | Resp: ${resp}"
-    if [ ${respCode} -ne 200 ]; then
+    if [ "${respCode}" -ne 200 ]; then
       echo "Fetching PCT package failed on attempt ${i}, retrying..."
       sleep 5
     else
-      downloadChecksumRaw=$(shasum -a 256 /tmp/${FILE} || sha256sum /tmp/${FILE})
-      downloadChecksum=$(echo ${downloadChecksumRaw} | cut -d ' ' -f 1)
+      downloadChecksumRaw=$(shasum -a 256 "/tmp/${FILE}" || sha256sum "/tmp/${FILE}")
+      downloadChecksum=$(echo "${downloadChecksumRaw}" | cut -d ' ' -f 1)
       logDebug "Checksum calc for ${FILE}:"
       logDebug " - Expect checksum: ${CHECKSUM}"
       logDebug " - Actual checksum: ${downloadChecksum}"
-      if [ ${downloadChecksum} = ${CHECKSUM} ]; then
+      if [ "${downloadChecksum}" = "${CHECKSUM}" ]; then
         logDebug "Extracting /tmp/${FILE} to ${destination}"
-        tar -zxf "/tmp/${FILE}" -C ${destination}
-        tarStatus=$(echo $?)
+        tar -zxf "/tmp/${FILE}" -C "${destination}"
+        tarStatus=$?
         logDebug "Removing /tmp/${FILE}"
-        rm "/tmp/${FILE}"
+        rm -- "/tmp/${FILE}"
         if [ ${tarStatus} -eq 0 ]; then
           echo "Remember to add the pct app to your path:"
-          echo 'export PATH=$PATH:'${destination}
+					# shellcheck disable=SC2016
+          echo 'export PATH=$PATH:'"${destination}"
           exit 0
         else
-          echo "Untar unsuccessful (status code: $?)"
+          echo "Untar unsuccessful (status code: $tarStatus)"
           exit 1
         fi
       else
         echo "Checksum verification failed for ${FILE}"
         exit 1
       fi
-      return 0
     fi
   done
 }

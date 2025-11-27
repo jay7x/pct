@@ -17,7 +17,7 @@ draft: false
 * [Getting Started](#getting-started)
   * [pct new](#pct-new)
   * [Template Updates](#template-updates)
-  * [Tab Completion](#tab-completion)
+  * [Setting up Tab Completion](#setting-up-tab-completion)
 * [Writing Your Own Templates](#writing-templates)
   * [Dos and Don'ts](#dos-and-donts)
   * [Structure](#structure)
@@ -33,9 +33,9 @@ draft: false
   * [Prerequisites](#prerequisites)
   * [Install site](#install-site)
   * [Run site](#run-site)
-* [Request a feature](#request-a-feature)
+* [Requesting a feature](#requesting-a-feature)
 * [Reporting Problems](#reporting-problems)
-* [Installing Telemetry Free Version](#installing-telemetry-free-version)
+
 ## Overview
 
 Puppet Content Templates (PCT) codify a structure to produce content for any Puppet Product that can be authored by Puppet Product Teams or external users without direct help of the PDK team.
@@ -44,7 +44,7 @@ PCT can create any type of a Puppet Product project: Puppet control repo, Puppet
 
 These are meant to be ready-to-run, which means they put everything needed for a user to run the project from the moment after creation. This solves the 'blank page' problem, where a few files are in place but the user does not know what the next steps are.
 
-> :warning: PCT is currently in an EXPERIMENTAL phase and feedback is encouraged via [pct/discussions](https://github.com/puppetlabs/pct/discussions) and starting a `feedback` post.
+> :warning: PCT is currently in an EXPERIMENTAL phase and feedback is encouraged via [pct/discussions](https://github.com/jay7x/pct/discussions) and starting a `feedback` post.
 
 ## Installing
 
@@ -53,23 +53,20 @@ While the PCT is in early release, we provide an archive and a simple script to 
 ### Unix Systems
 
 ```bash
-curl -L https://pup.pt/pct/install.sh | sh
+curl -L https://raw.githubusercontent.com/jay7x/pct/refs/heads/main/scripts/install.sh | bash
 ```
 
 ### Windows Systems
 
 ```ps
-iex "&{ $(irm https://pup.pt/pct/install.ps1); Install-Pct }"
+iex "&{ $(irm 'https://raw.githubusercontent.com/jay7x/pct/refs/heads/main/scripts/install.ps1'); Install-Pct }"
 ```
 
 This will install the latest release of PCT to `~/.puppetlabs/pct`.
 
-![install_pct](https://github.com/puppetlabs/pct/blob/main/docs/_resources/install_and_export_path.gif?raw=true)
+![install_pct](https://github.com/jay7x/pct/blob/main/docs/_resources/install_and_export_path.gif?raw=true)
 
 > :warning: If you do not use the install script and are extracting the archive yourself, be sure to use the fully qualified path to `~/.puppetlabs/pct` on *nix or `$HOME/.puppetlabs/pct` on Windows when you set your `PATH` environment variable.
-
-A version of the product, with telemetry functionality disabled, is available too.
-See [here](#installing-telemetry-free-version) for instructions on how to install it.
 
 ## Setting up Tab Completion
 
@@ -79,7 +76,7 @@ PCT has built in tab completion support for the following shells: `bash`, `zsh`,
 
 To view the install instructions, access the `--help` menu in `pct completion` and follow the instructions for your shell:
 
-![tab_completion](https://github.com/puppetlabs/pct/blob/main/docs/_resources/completion_setup.gif?raw=true)
+![tab_completion](https://github.com/jay7x/pct/blob/main/docs/_resources/completion_setup.gif?raw=true)
 
 ## Quick Start Guide
 
@@ -92,25 +89,25 @@ This quick start guide will show you how to:
 ### **STEP 1:** Create a Puppet Module
 
 Let's name our module `test_module` using the `-n` flag:
-![new_project_template](https://github.com/puppetlabs/pct/blob/main/docs/_resources/new_module.gif?raw=true)
+![new_project_template](https://github.com/jay7x/pct/blob/main/docs/_resources/new_module.gif?raw=true)
 
 ### **STEP 2:** Add a New Class
 
 If we `cd` in to the module root dir, everything will get deployed with the correct layout:
-![new_class](https://github.com/puppetlabs/pct/blob/main/docs/_resources/docs/_resources/new_class.gif?raw=true)
+![new_class](https://github.com/jay7x/pct/blob/main/docs/_resources/docs/_resources/new_class.gif?raw=true)
 
 ### **STEP 3:** Add a Github Actions Workflow
 
 Want to know what configurable parameters are availble for a template and their defaults?
 Run `pct new --info <TEMPLATE_AUTHOR>/<TEMPLATE_ID>`:
 
-![new_info](https://github.com/puppetlabs/pct/blob/main/docs/_resources/new_info.gif?raw=true)
+![new_info](https://github.com/jay7x/pct/blob/main/docs/_resources/new_info.gif?raw=true)
 
 We're happy with those defaults, so let's deploy this item.
 
 Since we're outside the module root dir, we'll use the `-o` option to point at the root dir:
 
-![new_info](https://github.com/puppetlabs/pct/blob/main/docs/_resources/new_ghactions.gif?raw=true)
+![new_info](https://github.com/jay7x/pct/blob/main/docs/_resources/new_ghactions.gif?raw=true)
 
 ## Getting Started
 
@@ -436,7 +433,7 @@ Will attempt to download the PCT template from the specified url and then afterw
 
 **Git** must be installed for this feature to work. The git repository must contain only one template and must be structured with the `pct-config.yml` file and the `content` directory in the root directory of the repository.
 
-For more information on template structures see the [Writing Templates](https://github.com/puppetlabs/pct#writing-templates) section in the `README`.
+For more information on template structures see the [Writing Templates](#writing-templates) section in the `README`.
 
 For example, this command:
 
@@ -455,9 +452,9 @@ be visible on the site.
 
 Essential software that will need to be installed to run the documentation site locally:
 
-- Git version control
-- Hugo extended version
-- Nodejs and NPM
+* Git version control
+* Hugo extended version
+* Nodejs and NPM
 
 ### Install site
 
@@ -475,10 +472,12 @@ To stop the running `ctrl + c` in the terminal window in which it is running.
 ### Run site
 
 Commands to run the site locally:
+
 ```bash
 # Run without draft pages being displayed
 ./docs.sh
 ```
+
 or
 
 ```bash
@@ -486,44 +485,14 @@ or
 ./docs.sh -D
 ```
 
-
 ## Requesting a feature
 
-Open a new feature request in our [Github discussion](https://github.com/puppetlabs/pct/issues/new) page.
+Open a new feature request in our [Github issues](https://github.com/jay7x/pct/issues/new) page.
 
 ## Reporting Problems
 
 If you're having trouble with the experimental PCT tool, please follow these instructions
-to file an issue on our GitHub repository: <https://github.com/puppetlabs/pct/issues/new>
+to file an issue on our GitHub repository: <https://github.com/jay7x/pct/issues/new>
 
 Make sure to fill in the information that is requested in the issue template as it
 will help us investigate the problem more quickly.
-
-## Installing Telemetry Free Version
-
-As of `0.5.0`, we have been gathering telemetry data to provide insights in to how our products are being used.
-
-The following data is collected:
-
-- Version of application in use
-- OS / platform of the device
-- What commands have been invoked (including command args)
-- Any errors that occurred when running the application
-
-We understand that there will be some users who prefer to have no telemetry data sent.
-For those users, we offer a version of PCT with the telemetry functionality disabled.
-
-To install:
-### Unix Systems
-
-```bash
-curl -L https://pup.pt/pct/install.sh | sh -s -- --no-telemetry
-```
-
-### Windows Systems
-
-```ps
-iex "&{ $(irm https://pup.pt/pct/install.ps1); Install-Pct -NoTelemetry }"
-```
-
-This will install the latest release of PCT, without telemetry functionality, to `~/.puppetlabs/pct`.

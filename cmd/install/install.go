@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/afero"
 
 	"github.com/puppetlabs/pct/pkg/install"
-	"github.com/puppetlabs/pct/pkg/telemetry"
 	"github.com/puppetlabs/pct/pkg/utils"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -45,10 +44,6 @@ func (ic *InstallCommand) CreateCommand() *cobra.Command {
 }
 
 func (ic *InstallCommand) executeInstall(cmd *cobra.Command, args []string) error {
-	_, span := telemetry.NewSpan(cmd.Context(), "install")
-	defer telemetry.EndSpan(span)
-	telemetry.AddStringSpanAttribute(span, "name", "install")
-
 	templateInstallationPath := ""
 	var err error = nil
 	if ic.GitUri != "" { // For cloning a template

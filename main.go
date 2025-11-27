@@ -18,33 +18,21 @@ import (
 	"github.com/puppetlabs/pct/pkg/gzip"
 	"github.com/puppetlabs/pct/pkg/install"
 	"github.com/puppetlabs/pct/pkg/tar"
-	"github.com/puppetlabs/pct/pkg/telemetry"
 
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 )
 
 var (
-	version           = "dev"
-	commit            = "none"
-	date              = "unknown"
-	honeycomb_api_key = "not_set"
-	honeycomb_dataset = "not_set"
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
 )
 
 func main() {
-	// Telemetry must be initialized before anything else;
-	// If the telemetry build tag was not passed, this is all null ops
-	ctx, traceProvider, parentSpan := telemetry.Start(context.Background(), honeycomb_api_key, honeycomb_dataset, "pct")
+	ctx := context.Background()
 
 	var rootCmd = root.CreateRootCommand()
-
-	// Get the command called and its arguments;
-	// The arguments are only necessary if we want to
-	// hand them off as an attribute to the parent span:
-	// do we? Otherwise we just need the calledCommand
-	calledCommand, calledCommandArguments := root.GetCalledCommand(rootCmd)
-	telemetry.AddStringSpanAttribute(parentSpan, "arguments", calledCommandArguments)
 
 	var verCmd = appver.CreateVersionCommand(version, date, commit)
 	v := appver.Format(version, date, commit)
@@ -99,14 +87,8 @@ func main() {
 	// initialize
 	cobra.OnInitialize(root.InitLogger, root.InitConfig)
 
-	// instrument & execute called command
-	ctx, childSpan := telemetry.NewSpan(ctx, calledCommand)
+	// execute called command
 	err := rootCmd.ExecuteContext(ctx)
-	telemetry.RecordSpanError(childSpan, err)
-	telemetry.EndSpan(childSpan)
-
-	// Send all events
-	telemetry.ShutDown(ctx, traceProvider, parentSpan)
 
 	// Handle exiting with/out errors.
 	cobra.CheckErr(err)

@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/puppetlabs/pct/pkg/telemetry"
 	"github.com/spf13/cobra"
 )
 
@@ -16,10 +15,6 @@ func CreateVersionCommand(version, buildDate string, commit string) *cobra.Comma
 		Use:    "version",
 		Hidden: true,
 		Run: func(cmd *cobra.Command, args []string) {
-			_, span := telemetry.NewSpan(cmd.Context(), "version")
-			defer telemetry.EndSpan(span)
-			telemetry.AddStringSpanAttribute(span, "name", "version")
-
 			fmt.Fprint(os.Stdout, Format(version, buildDate, commit))
 		},
 	}
