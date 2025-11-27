@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/puppetlabs/pct/internal/pkg/pct"
-	"github.com/puppetlabs/pct/pkg/telemetry"
 	"github.com/puppetlabs/pct/pkg/utils"
 
 	"github.com/rs/zerolog/log"
@@ -152,12 +151,6 @@ func getApplicationInfo(appVersionString string) pct.PDKInfo {
 }
 
 func execute(cmd *cobra.Command, args []string) error {
-	span := telemetry.GetSpanFromContext(cmd.Context())
-	// Add template to span if needed
-	if len(args) == 1 {
-		telemetry.AddStringSpanAttribute(span, "template", args[0])
-	}
-
 	log.Trace().Msg("Run")
 	log.Trace().Msgf("Template path: %v", localTemplatePath)
 	log.Trace().Msgf("Selected template: %v", selectedTemplate)
