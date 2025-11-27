@@ -1,21 +1,15 @@
 function Install-Pct {
   [CmdletBinding()]
-  param (
-    [switch]$NoTelemetry
-  )
 
   Set-StrictMode -Version 3.0
   $ErrorActionPreference = "Stop"
 
-  $org = 'puppetlabs'
+  $org = 'jay7x'
   $repo = 'pct'
 
   $app = 'pct'
 
   $appPkgName = 'pct'
-  if ($NoTelemetry) {
-    $appPkgName = 'notel_pct'
-  }
 
   $arch = "x86_64"
   $os = 'windows'
@@ -37,12 +31,7 @@ function Install-Pct {
   }
 
   try {
-    if ($NoTelemetry) {
-      Write-Host "Downloading and extracting ${app} (TELEMETRY DISABLED VERSION) to ${Destination}"
-    }
-    else {
-      Write-Host "Downloading and extracting ${app} to ${Destination}"
-    }
+    Write-Host "Downloading and extracting ${app} to ${Destination}"
     Invoke-WebRequest -Uri $downloadURL -OutFile $packagePath
   }
   finally {
