@@ -3,6 +3,10 @@ name: Installation Tests
 on:
   pull_request:
     branches: [ main ]
+    # Only execute this workflow if anything related changed
+    paths:
+      - scripts/install.*
+      - .goreleaser.yml
 
 jobs:
   install_test:
