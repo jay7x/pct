@@ -60,8 +60,8 @@ func Test_PctInstall_InstallsTo_DefinedTemplatePath(t *testing.T) {
 
 	templatePkgs := []templateData{
 		{
-			name:         "additional-project",
-			author:       "adder",
+			name:   "additional-project",
+			author: "adder",
 			// NOTE: The vertical lines below (`│`) are unicode symbols, not ASCII `|`!
 			listExpRegex: "Additional\\sProject\\s+│\\sadder\\s+│\\sadditional-project\\s+│\\sproject",
 			expectedFiles: []string{
@@ -71,8 +71,8 @@ func Test_PctInstall_InstallsTo_DefinedTemplatePath(t *testing.T) {
 			},
 		},
 		{
-			name:         "good-project",
-			author:       "gooder",
+			name:   "good-project",
+			author: "gooder",
 			// NOTE: The vertical lines below (`│`) are unicode symbols, not ASCII `|`!
 			listExpRegex: "Good\\sProject\\s+│\\sgooder\\s+│\\sgood-project\\s+│\\sproject",
 			expectedFiles: []string{
@@ -126,8 +126,8 @@ func Test_PctInstall_InstallsFrom_RemoteTemplatePath(t *testing.T) {
 
 	templatePkgs := []templateData{
 		{
-			name:         "additional-project",
-			author:       "adder",
+			name:   "additional-project",
+			author: "adder",
 			// NOTE: The vertical lines below (`│`) are unicode symbols, not ASCII `|`!
 			listExpRegex: "Additional\\sProject\\s+│\\sadder\\s+│\\sadditional-project\\s+│\\sproject",
 			expectedFiles: []string{
@@ -137,8 +137,8 @@ func Test_PctInstall_InstallsFrom_RemoteTemplatePath(t *testing.T) {
 			},
 		},
 		{
-			name:         "good-project",
-			author:       "gooder",
+			name:   "good-project",
+			author: "gooder",
 			// NOTE: The vertical lines below (`│`) are unicode symbols, not ASCII `|`!
 			listExpRegex: "Good\\sProject\\s+│\\sgooder\\s+│\\sgood-project\\s+│\\sproject",
 			expectedFiles: []string{
@@ -353,8 +353,8 @@ func Test_PctInstall_WithGitUri_InstallTemplate(t *testing.T) {
 
 	templatePkgs := []templateData{
 		{
-			name:         "test-template-1",
-			author:       "test-user",
+			name:   "test-template-1",
+			author: "test-user",
 			// NOTE: The vertical lines below (`│`) are unicode symbols, not ASCII `|`!
 			listExpRegex: "Test\\sTemplate\\s1\\s+│\\stest-user\\s+│\\stest-template-1\\s+│\\sproject",
 			expectedFiles: []string{
@@ -363,8 +363,8 @@ func Test_PctInstall_WithGitUri_InstallTemplate(t *testing.T) {
 			gitUri: "https://github.com/puppetlabs/pct-test-template-01.git",
 		},
 		{
-			name:         "test-template-2",
-			author:       "test-user",
+			name:   "test-template-2",
+			author: "test-user",
 			// NOTE: The vertical lines below (`│`) are unicode symbols, not ASCII `|`!
 			listExpRegex: "Test\\sTemplate\\s2\\s+│\\stest-user\\s+│\\stest-template-2\\s+│\\sproject",
 			expectedFiles: []string{
