@@ -534,10 +534,13 @@ func TestFormatTemplates(t *testing.T) {
 				},
 				jsonOutput: "table",
 			},
+			// NOTE: The vertical lines below (`│`) are unicode symbols, not ASCII `|`!
+			// See tablewriter/tw/symbols.go for NewSymbols, case StyleDefault
+			// https://github.com/olekukonko/tablewriter/blob/master/tw/symbols.go#L259
 			matches: []string{
-				`DISPLAYNAME \| AUTHOR \| NAME \| TYPE`,
-				`Foo Item\s+\|\sbaz\s+\|\sfoo\s+\|\sItem`,
-				`Bar Item\s+\|\sbaz\s+\|\sbar\s+\|\sItem`,
+				`DISPLAY NAME │ AUTHOR │ NAME │ TYPE`,
+				`Foo Item\s+│\sbaz\s+│\sfoo\s+│\sItem`,
+				`Bar Item\s+│\sbaz\s+│\sbar\s+│\sItem`,
 			},
 		},
 		{
