@@ -24,6 +24,8 @@ import (
 	"github.com/jay7x/pct/pkg/utils"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/olekukonko/tablewriter"
+	"github.com/olekukonko/tablewriter/renderer"
+	"github.com/olekukonko/tablewriter/tw"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/afero"
 	"github.com/spf13/viper"
@@ -168,9 +170,12 @@ func (*Pct) FormatTemplates(tmpls []PuppetContentTemplate, jsonOutput string) (s
 			output = stringBuilder.String()
 		} else {
 			stringBuilder := &strings.Builder{}
-			table := tablewriter.NewWriter(stringBuilder)
-			table.SetHeader([]string{"DisplayName", "Author", "Name", "Type"})
-			table.SetBorder(false)
+			table := tablewriter.NewTable(stringBuilder,
+				tablewriter.WithRenderer(renderer.NewBlueprint(tw.Rendition{
+					Borders: tw.BorderNone,
+				})),
+			)
+			table.Header([]string{"DisplayName", "Author", "Name", "Type"})
 			for _, v := range tmpls {
 				table.Append([]string{v.Display, v.Author, v.Id, v.Type})
 			}

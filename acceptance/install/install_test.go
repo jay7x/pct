@@ -34,7 +34,8 @@ func Test_PctInstall_InstallsTo_DefaultTemplatePath(t *testing.T) {
 	assert.FileExists(t, filepath.Join(getDefaultTemplatePath(), "gooder", "good-project", "0.1.0", "content", "goodfile.txt.tmpl"))
 
 	stdout, stderr, exitCode = testutils.RunAppCommand("new --list", "")
-	assert.Regexp(t, "Good\\sProject\\s+\\|\\sgooder\\s+\\|\\sgood-project\\s+\\|\\sproject", stdout)
+	// NOTE: The vertical lines below (`│`) are unicode symbols, not ASCII `|`!
+	assert.Regexp(t, "Good\\sProject\\s+│\\sgooder\\s+│\\sgood-project\\s+│\\sproject", stdout)
 	assert.Equal(t, "", stderr)
 	assert.Equal(t, 0, exitCode)
 
@@ -61,7 +62,8 @@ func Test_PctInstall_InstallsTo_DefinedTemplatePath(t *testing.T) {
 		{
 			name:         "additional-project",
 			author:       "adder",
-			listExpRegex: "Additional\\sProject\\s+\\|\\sadder\\s+\\|\\sadditional-project\\s+\\|\\sproject",
+			// NOTE: The vertical lines below (`│`) are unicode symbols, not ASCII `|`!
+			listExpRegex: "Additional\\sProject\\s+│\\sadder\\s+│\\sadditional-project\\s+│\\sproject",
 			expectedFiles: []string{
 				"pct-config.yml",
 				"content/empty.txt",
@@ -71,7 +73,8 @@ func Test_PctInstall_InstallsTo_DefinedTemplatePath(t *testing.T) {
 		{
 			name:         "good-project",
 			author:       "gooder",
-			listExpRegex: "Good\\sProject\\s+\\|\\sgooder\\s+\\|\\sgood-project\\s+\\|\\sproject",
+			// NOTE: The vertical lines below (`│`) are unicode symbols, not ASCII `|`!
+			listExpRegex: "Good\\sProject\\s+│\\sgooder\\s+│\\sgood-project\\s+│\\sproject",
 			expectedFiles: []string{
 				"pct-config.yml",
 				"content/empty.txt",
@@ -125,7 +128,8 @@ func Test_PctInstall_InstallsFrom_RemoteTemplatePath(t *testing.T) {
 		{
 			name:         "additional-project",
 			author:       "adder",
-			listExpRegex: "Additional\\sProject\\s+\\|\\sadder\\s+\\|\\sadditional-project\\s+\\|\\sproject",
+			// NOTE: The vertical lines below (`│`) are unicode symbols, not ASCII `|`!
+			listExpRegex: "Additional\\sProject\\s+│\\sadder\\s+│\\sadditional-project\\s+│\\sproject",
 			expectedFiles: []string{
 				"pct-config.yml",
 				"content/empty.txt",
@@ -135,7 +139,8 @@ func Test_PctInstall_InstallsFrom_RemoteTemplatePath(t *testing.T) {
 		{
 			name:         "good-project",
 			author:       "gooder",
-			listExpRegex: "Good\\sProject\\s+\\|\\sgooder\\s+\\|\\sgood-project\\s+\\|\\sproject",
+			// NOTE: The vertical lines below (`│`) are unicode symbols, not ASCII `|`!
+			listExpRegex: "Good\\sProject\\s+│\\sgooder\\s+│\\sgood-project\\s+│\\sproject",
 			expectedFiles: []string{
 				"pct-config.yml",
 				"content/empty.txt",
@@ -350,7 +355,8 @@ func Test_PctInstall_WithGitUri_InstallTemplate(t *testing.T) {
 		{
 			name:         "test-template-1",
 			author:       "test-user",
-			listExpRegex: "Test\\sTemplate\\s1\\s+\\|\\stest-user\\s+\\|\\stest-template-1\\s+\\|\\sproject",
+			// NOTE: The vertical lines below (`│`) are unicode symbols, not ASCII `|`!
+			listExpRegex: "Test\\sTemplate\\s1\\s+│\\stest-user\\s+│\\stest-template-1\\s+│\\sproject",
 			expectedFiles: []string{
 				"pct-config.yml",
 			},
@@ -359,7 +365,8 @@ func Test_PctInstall_WithGitUri_InstallTemplate(t *testing.T) {
 		{
 			name:         "test-template-2",
 			author:       "test-user",
-			listExpRegex: "Test\\sTemplate\\s2\\s+\\|\\stest-user\\s+\\|\\stest-template-2\\s+\\|\\sproject",
+			// NOTE: The vertical lines below (`│`) are unicode symbols, not ASCII `|`!
+			listExpRegex: "Test\\sTemplate\\s2\\s+│\\stest-user\\s+│\\stest-template-2\\s+│\\sproject",
 			expectedFiles: []string{
 				"pct-config.yml",
 			},

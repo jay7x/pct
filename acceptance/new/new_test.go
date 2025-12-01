@@ -32,7 +32,7 @@ func TestPctNew(t *testing.T) {
 	testutils.SetAppName(APP)
 
 	stdout, stderr, exitCode := testutils.RunAppCommand("new", "")
-	assert.Contains(t, stdout, "DISPLAYNAME")
+	assert.Contains(t, stdout, "DISPLAY NAME")
 	assert.Contains(t, stdout, "AUTHOR")
 	assert.Contains(t, stdout, "NAME")
 	assert.Contains(t, stdout, "TYPE")
@@ -55,7 +55,7 @@ func TestPctNewTemplatePath(t *testing.T) {
 	testutils.SetAppName(APP)
 
 	stdout, stderr, exitCode := testutils.RunAppCommand("new --templatepath "+templatePath, "")
-	assert.Contains(t, stdout, "DISPLAYNAME")
+	assert.Contains(t, stdout, "DISPLAY NAME")
 	assert.Contains(t, stdout, "NAME")
 	assert.Contains(t, stdout, "TYPE")
 	assert.Contains(t, stdout, "full-project")
