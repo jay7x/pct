@@ -13,7 +13,6 @@ import (
 )
 
 func TestBuild(t *testing.T) {
-
 	type args struct {
 		projectPath string
 		targetDir   string
@@ -228,17 +227,16 @@ template:
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			fs := afero.NewMemMapFs()
 			afs := &afero.Afero{Fs: fs}
 
 			for _, path := range tt.mockDirs {
-				afs.Mkdir(path, 0750) //nolint:gosec,errcheck // this result is not used in a secure application
+				_ = afs.Mkdir(path, 0o0750)
 			}
 
 			for file, content := range tt.mockFiles {
-				config, _ := afs.Create(file) //nolint:gosec,errcheck // this result is not used in a secure application
-				config.Write([]byte(content)) //nolint:errcheck
+				config, _ := afs.Create(file)
+				_, _ = config.WriteString(content)
 			}
 
 			p := &build.Builder{

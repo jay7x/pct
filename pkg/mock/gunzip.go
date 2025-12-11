@@ -35,7 +35,7 @@ func (g *Gunzip) Gunzip(source, target string) (string, error) {
 	if !g.GunzipResponse[g.gunzipCalled].Fail {
 		afs := &afero.Afero{Fs: g.Fs}
 		tar := strings.TrimSuffix(filepath.Join(target, filepath.Base(source)), ".gz")
-		afs.Create(tar) // nolint:errcheck  // #nosec // this result is not used in a secure application
+		_, _ = afs.Create(tar)
 	}
 
 	path := g.GunzipResponse[g.gunzipCalled].FilePath

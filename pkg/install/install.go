@@ -190,7 +190,7 @@ func (p *Installer) InstallFromConfig(configFile, targetDir string, force bool) 
 	// Create namespaced directory and move contents of temp folder to it
 	installedPkgPath := filepath.Join(targetDir, info.Author, info.Id)
 
-	err = p.AFS.MkdirAll(installedPkgPath, 0750)
+	err = p.AFS.MkdirAll(installedPkgPath, 0o0750)
 	if err != nil {
 		return "", err
 	}

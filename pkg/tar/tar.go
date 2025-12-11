@@ -129,7 +129,7 @@ func (t *Tar) Untar(tarball, target string) (outputDirPath string, err error) {
 		path := filepath.Join(target, filepath.Clean(header.Name))
 		info := header.FileInfo()
 		if info.IsDir() {
-			if err = t.AFS.MkdirAll(filepath.Clean(path), info.Mode()); err != nil {
+			if err := t.AFS.MkdirAll(filepath.Clean(path), info.Mode()); err != nil {
 				return "", err
 			}
 			continue
@@ -137,7 +137,7 @@ func (t *Tar) Untar(tarball, target string) (outputDirPath string, err error) {
 
 		file, err := t.AFS.OpenFile(filepath.Clean(path), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, info.Mode())
 
-		defer func() {
+		defer func() { //nolint:gocritic // this defer func() is in the loop by purpose (see t.AFS.OpenFile() above)
 			if err := file.Close(); err != nil {
 				log.Error().Msgf("Error closing file: %s", err)
 			}

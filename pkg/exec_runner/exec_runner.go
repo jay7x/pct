@@ -8,6 +8,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+const (
+	GOOSWindows = "windows"
+)
+
 type ExecI interface {
 	Command(name string, arg ...string) error
 	Output() ([]byte, error)
@@ -21,7 +25,7 @@ func (e *Exec) Command(name string, arg ...string) error {
 	var pathToExecutable string
 	var err error
 
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == GOOSWindows {
 		pathToExecutable, err = exec.LookPath("cmd.exe")
 	} else {
 		pathToExecutable, err = exec.LookPath(name)
@@ -49,7 +53,7 @@ func (e *Exec) Output() ([]byte, error) {
 
 func buildCommandArgs(commandName string, args []string) []string {
 	var a []string
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == GOOSWindows {
 		a = append(a, "/c")
 	}
 	a = append(a, commandName)

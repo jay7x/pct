@@ -9,7 +9,6 @@ import (
 )
 
 func TestTar(t *testing.T) {
-
 	tempDir := t.TempDir()
 
 	type args struct {
@@ -35,13 +34,12 @@ func TestTar(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			fs := afero.NewMemMapFs()
 			afs := &afero.Afero{Fs: fs}
-			afs.MkdirAll(tt.args.source, 0750) //nolint:errcheck
+			_ = afs.MkdirAll(tt.args.source, 0o0750)
 
-			tar := &tar.Tar{AFS: afs}
-			tarFilePath, err := tar.Tar(tt.args.source, tt.args.target)
+			myTar := &tar.Tar{AFS: afs}
+			tarFilePath, err := myTar.Tar(tt.args.source, tt.args.target)
 
 			if err != nil != tt.wantErr {
 				t.Errorf("Tar() error = %v, wantErr %v", err, tt.wantErr)
@@ -55,7 +53,6 @@ func TestTar(t *testing.T) {
 }
 
 func TestUntar(t *testing.T) {
-
 	fs := afero.NewMemMapFs()
 	afs := &afero.Afero{Fs: fs}
 
@@ -88,7 +85,6 @@ func TestUntar(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			// mock the tarball
 			f, _ := afs.Create(tt.args.tarball)
 			tarballBytes := []byte{
@@ -381,11 +377,11 @@ func TestUntar(t *testing.T) {
 				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 			}
-			f.Write(tarballBytes) //nolint:errcheck
+			_, _ = f.Write(tarballBytes)
 
-			tar := &tar.Tar{afs}
+			myTar := &tar.Tar{afs}
 
-			path, err := tar.Untar(tt.args.tarball, tt.args.target)
+			path, err := myTar.Untar(tt.args.tarball, tt.args.target)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Untar() error = %v, wantErr %v", err, tt.wantErr)
 			}

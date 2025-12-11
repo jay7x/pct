@@ -2,7 +2,7 @@ package new
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"regexp"
 	"testing"
 
@@ -59,7 +59,7 @@ func TestCreateCommand(t *testing.T) {
 				return
 			}
 
-			out, err := ioutil.ReadAll(b)
+			out, err := io.ReadAll(b)
 			if err != nil {
 				t.Errorf("Failed to read stdout: %v", err)
 				return

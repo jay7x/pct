@@ -95,7 +95,7 @@ func (d *Docs) FindAndParse(docsFolderPath string) {
 			if err != nil {
 				log.Warn().Msgf("Could not parse %s", entryPath)
 				// Some docs might need to be skipped in terminal
-			} else if skip, _ := fm["skipTerminal"]; skip != true { //nolint
+			} else if fm["skipTerminal"] != true {
 				// Turn the tags into an array of strings for further use
 				tagsAsInterface := fm["tags"].([]interface{})
 				tags := make([]string, len(tagsAsInterface))

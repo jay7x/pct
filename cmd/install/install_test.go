@@ -2,13 +2,12 @@ package install_test
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"testing"
-
-	"github.com/spf13/afero"
 
 	"github.com/jay7x/pct/cmd/install"
 	"github.com/jay7x/pct/pkg/mock"
+	"github.com/spf13/afero"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
@@ -85,7 +84,8 @@ func TestCreateinstallCommand(t *testing.T) {
 			installCmd := cmd.CreateCommand()
 
 			b := bytes.NewBufferString("")
-			installCmd.SetOutput(b)
+			installCmd.SetOut(b)
+			installCmd.SetErr(b)
 
 			installCmd.SetArgs(tt.args)
 			err := installCmd.Execute()
@@ -96,10 +96,9 @@ func TestCreateinstallCommand(t *testing.T) {
 			}
 
 			if (err != nil) && tt.expectError {
-				out, _ := ioutil.ReadAll(b)
+				out, _ := io.ReadAll(b)
 				assert.Contains(t, string(out), tt.expectedOutput)
 			}
-
 		})
 	}
 }

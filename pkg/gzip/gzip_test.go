@@ -36,10 +36,9 @@ func TestGzip(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			// mock the tarball
 			f, _ := afs.Create(tt.args.source)
-			f.WriteString("tar contents") //nolint:errcheck
+			_, _ = f.WriteString("tar contents")
 
 			// Initialize gzip with our mock filesystem
 			g := &gzip.Gzip{

@@ -29,6 +29,8 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/afero"
 	"github.com/spf13/viper"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"gopkg.in/yaml.v2"
 )
 
@@ -37,6 +39,11 @@ const (
 	TemplateConfigFileName     = "pct-config.yml"
 	UserTemplateConfigName     = "pct"
 	UserTemplateConfigFileName = "pct.yml"
+
+	FormatTable = "table"
+	FormatJSON  = "json"
+
+	TemplateTypeProject = "project"
 )
 
 // PuppetContentTemplateInfo is the housing struct for marshaling YAML data
@@ -125,7 +132,7 @@ func (p *Pct) List(templatePath string, templateName string) []PuppetContentTemp
 		log.Debug().Msgf("Found: %+v", file)
 		i := p.readTemplateConfig(file).Template
 		// Do not write id-less configs (ie, invalid, could not parse) to the return
-		if len(i.Id) > 0 {
+		if i.Id != "" {
 			tmpls = append(tmpls, i)
 		}
 	}
@@ -135,7 +142,7 @@ func (p *Pct) List(templatePath string, templateName string) []PuppetContentTemp
 		log.Debug().Msgf("Found: %+v", file)
 		i := p.readTemplateConfig(file).Template
 		// Do not write id-less configs (ie, invalid, could not parse) to the return
-		if len(i.Id) > 0 {
+		if i.Id != "" {
 			tmpls = append(tmpls, i)
 		}
 	}
@@ -155,20 +162,21 @@ func (p *Pct) List(templatePath string, templateName string) []PuppetContentTemp
 func (*Pct) FormatTemplates(tmpls []PuppetContentTemplate, jsonOutput string) (string, error) {
 	output := ""
 	switch jsonOutput {
-	case "table":
+	case FormatTable:
 		count := len(tmpls)
-		if count < 1 {
+		switch {
+		case count < 1:
 			log.Warn().Msgf("Could not locate any templates at %+v", viper.GetString("templatepath"))
-		} else if count == 1 {
+		case count == 1:
 			stringBuilder := &strings.Builder{}
-			stringBuilder.WriteString(fmt.Sprintf("DisplayName:     %v\n", tmpls[0].Display))
-			stringBuilder.WriteString(fmt.Sprintf("Author:          %v\n", tmpls[0].Author))
-			stringBuilder.WriteString(fmt.Sprintf("Name:            %v\n", tmpls[0].Id))
-			stringBuilder.WriteString(fmt.Sprintf("TemplateType:    %v\n", tmpls[0].Type))
-			stringBuilder.WriteString(fmt.Sprintf("TemplateURL:     %v\n", tmpls[0].URL))
-			stringBuilder.WriteString(fmt.Sprintf("TemplateVersion: %v\n", tmpls[0].Version))
+			fmt.Fprintf(stringBuilder, "DisplayName:     %v\n", tmpls[0].Display)
+			fmt.Fprintf(stringBuilder, "Author:          %v\n", tmpls[0].Author)
+			fmt.Fprintf(stringBuilder, "Name:            %v\n", tmpls[0].Id)
+			fmt.Fprintf(stringBuilder, "TemplateType:    %v\n", tmpls[0].Type)
+			fmt.Fprintf(stringBuilder, "TemplateURL:     %v\n", tmpls[0].URL)
+			fmt.Fprintf(stringBuilder, "TemplateVersion: %v\n", tmpls[0].Version)
 			output = stringBuilder.String()
-		} else {
+		default: // > 1
 			stringBuilder := &strings.Builder{}
 			table := tablewriter.NewTable(stringBuilder,
 				tablewriter.WithRenderer(renderer.NewBlueprint(tw.Rendition{
@@ -177,12 +185,12 @@ func (*Pct) FormatTemplates(tmpls []PuppetContentTemplate, jsonOutput string) (s
 			)
 			table.Header([]string{"DisplayName", "Author", "Name", "Type"})
 			for _, v := range tmpls {
-				table.Append([]string{v.Display, v.Author, v.Id, v.Type})
+				_ = table.Append([]string{v.Display, v.Author, v.Id, v.Type})
 			}
-			table.Render()
+			_ = table.Render()
 			output = stringBuilder.String()
 		}
-	case "json":
+	case FormatJSON:
 		j := jsoniter.ConfigFastest
 		// This can't actually error because it's always getting a valid data struct;
 		// if there are problems building the data struct for the template, we error
@@ -199,7 +207,7 @@ func (*Pct) DisplayDefaults(defaults map[string]interface{}, format string) stri
 	var prettyDefaults []byte
 
 	switch format {
-	case "table":
+	case FormatTable:
 		if len(defaults) == 0 {
 			return "This template has no configuration options."
 		}
@@ -208,7 +216,7 @@ func (*Pct) DisplayDefaults(defaults map[string]interface{}, format string) stri
 		if err != nil {
 			log.Error().Msgf("Error converting to yaml: %v", err)
 		}
-	case "json":
+	case FormatJSON:
 		j := jsoniter.ConfigFastest
 		prettyDefaults, err = j.MarshalIndent(defaults, "", "  ")
 		if err != nil {
@@ -223,11 +231,11 @@ func (*Pct) DisplayDefaults(defaults map[string]interface{}, format string) stri
 // on the console in table format or json format.
 func (*Pct) FormatDeployment(deployed []string, jsonOutput string) error {
 	switch jsonOutput {
-	case "table":
+	case FormatTable:
 		for _, d := range deployed {
 			log.Info().Msgf("Deployed: %v", d)
 		}
-	case "json":
+	case FormatJSON:
 		j := jsoniter.ConfigFastest
 		prettyJSON, _ := j.MarshalIndent(deployed, "", "  ")
 		fmt.Printf("%s\n", prettyJSON)
@@ -239,28 +247,28 @@ func (*Pct) FormatDeployment(deployed []string, jsonOutput string) error {
 // data from both the configuration inside the template and provided by the
 // User in their user config file
 func (p *Pct) Deploy(info DeployInfo) []string {
-
 	log.Trace().Msgf("PDKInfo: %+v", info.PdkInfo)
 
 	log.Debug().Msgf("Template: %s", info.TemplateDirPath)
 	tmpl := p.readTemplateConfig(filepath.Join(info.TemplateDirPath, TemplateConfigFileName))
 	log.Trace().Msgf("Parsed: %+v", tmpl)
 
-	if info.TargetName == "" && info.TargetOutputDir == "" { // pdk new foo-foo
+	switch {
+	case info.TargetName == "" && info.TargetOutputDir == "": // pdk new foo-foo
 		cwd, _ := p.OsUtils.Getwd()
 		info.TargetName = filepath.Base(cwd)
 		info.TargetOutputDir = cwd
-	} else if info.TargetName != "" && info.TargetOutputDir == "" { // pdk new foo-foo -n wakka
+	case info.TargetName != "" && info.TargetOutputDir == "": // pdk new foo-foo -n wakka
 		cwd, _ := p.OsUtils.Getwd()
-		if tmpl.Template.Type == "project" {
+		if tmpl.Template.Type == TemplateTypeProject {
 			info.TargetOutputDir = filepath.Join(cwd, info.TargetName)
 		} else {
 			info.TargetOutputDir = cwd
 		}
-	} else if info.TargetName == "" && info.TargetOutputDir != "" { // pdk new foo-foo -o /foo/bar/baz
+	case info.TargetName == "" && info.TargetOutputDir != "": // pdk new foo-foo -o /foo/bar/baz
 		info.TargetName = filepath.Base(info.TargetOutputDir)
-	} else if info.TargetName != "" && info.TargetOutputDir != "" { // pdk new foo-foo -n wakka -o /foo/bar/baz
-		if tmpl.Template.Type == "project" {
+	default: // info.TargetName != "" && info.TargetOutputDir != "" // pdk new foo-foo -n wakka -o /foo/bar/baz
+		if tmpl.Template.Type == TemplateTypeProject {
 			info.TargetOutputDir = filepath.Join(info.TargetOutputDir, info.TargetName)
 		}
 	}
@@ -311,7 +319,7 @@ func (p *Pct) Deploy(info DeployInfo) []string {
 				deployed = append(deployed, templateFile.TargetFilePath)
 			}
 		} else {
-			err := p.createTemplateFile(info, templateFile, tmpl.Template)
+			err := p.createTemplateFile(info, templateFile)
 			if err != nil {
 				log.Error().Msgf("%s", err)
 				continue
@@ -335,13 +343,9 @@ func (p *Pct) createTemplateDirectory(targetDir string) error {
 	return nil
 }
 
-func (p *Pct) createTemplateFile(info DeployInfo, templateFile PuppetContentTemplateFileInfo, tmpl PuppetContentTemplate) error {
+func (p *Pct) createTemplateFile(info DeployInfo, templateFile PuppetContentTemplateFileInfo) error {
 	log.Trace().Msgf("Creating: '%s'", templateFile.TargetFilePath)
-	config := p.processConfiguration(
-		info,
-		templateFile.TemplatePath,
-		tmpl,
-	)
+	config := p.processConfiguration(info)
 
 	text, err := p.renderFile(templateFile.TemplatePath, config)
 	if err != nil {
@@ -381,7 +385,7 @@ func (p *Pct) createTemplateFile(info DeployInfo, templateFile PuppetContentTemp
 	return nil
 }
 
-func (p *Pct) processConfiguration(info DeployInfo, projectTemplate string, tmpl PuppetContentTemplate) map[string]interface{} {
+func (p *Pct) processConfiguration(info DeployInfo) map[string]interface{} {
 	v := viper.New()
 
 	log.Trace().Msgf("PDKInfo: %+v", info.PdkInfo)
@@ -406,9 +410,9 @@ func (p *Pct) processConfiguration(info DeployInfo, projectTemplate string, tmpl
 	// Convention based variables
 	v.SetDefault("pct_name", info.TargetName)
 
-	user := p.getCurrentUser()
-	v.SetDefault("user", user)
-	v.SetDefault("puppet_module.author", user)
+	currentUser := p.getCurrentUser()
+	v.SetDefault("user", currentUser)
+	v.SetDefault("puppet_module.author", currentUser)
 
 	// Machine based variables
 	cwd, _ := os.Getwd()
@@ -425,7 +429,6 @@ func (p *Pct) processConfiguration(info DeployInfo, projectTemplate string, tmpl
 
 	configFile := filepath.Join(info.TemplateDirPath, TemplateConfigFileName)
 	log.Trace().Msgf("Adding %v", filepath.Dir(configFile))
-	// v.SetConfigFile(configFile)
 	v.SetConfigName(TemplateConfigName)
 	v.SetConfigType("yml")
 	v.AddConfigPath(filepath.Dir(configFile))
@@ -483,10 +486,6 @@ func (p *Pct) readTemplateConfig(configFile string) PuppetContentTemplateInfo {
 	v := viper.New()
 	v.SetFs(p.AFS)
 	v.SetConfigFile(configFile)
-	// userConfigFileBase := filepath.Base(configFile)
-	// v.AddConfigPath(filepath.Dir(configFile))
-	// v.SetConfigName(strings.TrimSuffix(userConfigFileBase, filepath.Ext(userConfigFileBase)))
-	// v.SetConfigType("yml")
 
 	if err := v.ReadInConfig(); err == nil {
 		log.Trace().Msgf("Using template config file: %v", v.ConfigFileUsed())
@@ -518,7 +517,7 @@ func (p *Pct) renderFile(fileName string, vars interface{}) (string, error) {
 		Funcs(
 			template.FuncMap{
 				"toClassName": func(itemName string) string {
-					return strings.Title(strings.ToLower(itemName))
+					return cases.Title(language.Und).String(itemName)
 				},
 			},
 		)
@@ -597,10 +596,10 @@ func (p *Pct) filterNewestVersions(tt []PuppetContentTemplate) (ret []PuppetCont
 }
 
 func (p *Pct) getCurrentUser() string {
-	user, _ := user.Current()
-	if strings.Contains(user.Username, "\\") {
-		v := strings.Split(user.Username, "\\")
+	currentUser, _ := user.Current()
+	if strings.Contains(currentUser.Username, "\\") {
+		v := strings.Split(currentUser.Username, "\\")
 		return v[1]
 	}
-	return user.Username
+	return currentUser.Username
 }

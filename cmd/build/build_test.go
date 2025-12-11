@@ -2,15 +2,14 @@ package build_test
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/jay7x/pct/cmd/build"
 	"github.com/jay7x/pct/pkg/mock"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateBuildCommand(t *testing.T) {
@@ -79,7 +78,7 @@ func TestCreateBuildCommand(t *testing.T) {
 					t.Errorf("Unexpected error when none wanted: %v", err)
 					return
 				} else {
-					out, _ := ioutil.ReadAll(b)
+					out, _ := io.ReadAll(b)
 					assert.Regexp(t, tt.expectedErrorMatch, string(out))
 				}
 			} else if tt.expectedErrorMatch != "" {

@@ -120,10 +120,10 @@ func flagCompletion(cmd *cobra.Command, args []string, toComplete string) ([]str
 	}
 	localTemplatePath = viper.GetString("templatepath")
 
-	return completeName(localTemplatePath, toComplete), cobra.ShellCompDirectiveNoSpace | cobra.ShellCompDirectiveNoFileComp
+	return completeName(toComplete), cobra.ShellCompDirectiveNoSpace | cobra.ShellCompDirectiveNoFileComp
 }
 
-func completeName(cache string, match string) []string {
+func completeName(match string) []string {
 	var names []string
 	for _, tmpl := range cachedTemplates {
 		namespacedTemplate := fmt.Sprintf("%s/%s", tmpl.Author, tmpl.Id)

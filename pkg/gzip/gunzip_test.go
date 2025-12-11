@@ -57,8 +57,8 @@ func TestGunzip(t *testing.T) {
 
 			afs := &afero.Afero{Fs: fs}
 			for file, content := range tt.mockFiles {
-				config, _ := afs.Create(file) //nolint:gosec,errcheck // this result is not used in a secure application
-				config.Write([]byte(content)) //nolint:errcheck
+				config, _ := afs.Create(file)
+				_, _ = config.Write(content)
 			}
 
 			g := &gzip.Gunzip{AFS: afs}
@@ -72,8 +72,6 @@ func TestGunzip(t *testing.T) {
 
 			_, err = afs.Stat(tt.expectedTarFilePath)
 			assert.NoError(t, err)
-
 		})
 	}
-
 }

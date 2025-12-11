@@ -45,13 +45,13 @@ func (p *PctConfigProcessor) CheckConfig(configFile string) error {
 	// These parts are essential for build and deployment.
 
 	if info.Template.Id == "" {
-		msg = msg + "  * id\n"
+		msg += "  * id\n"
 	}
 	if info.Template.Author == "" {
-		msg = msg + "  * author\n"
+		msg += "  * author\n"
 	}
 	if info.Template.Version == "" {
-		msg = msg + "  * version\n"
+		msg += "  * version\n"
 	}
 	if msg != orig {
 		return errors.New(msg)

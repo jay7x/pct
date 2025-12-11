@@ -2,7 +2,7 @@ package new_test
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -10,9 +10,8 @@ import (
 	"github.com/jay7x/pct/acceptance/testutils"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"gopkg.in/yaml.v2"
-
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/yaml.v2"
 )
 
 const APP = "pct"
@@ -20,7 +19,7 @@ const APP = "pct"
 var templatePath string
 
 func TestMain(m *testing.M) {
-	log.Logger = zerolog.New(ioutil.Discard).With().Timestamp().Logger()
+	log.Logger = zerolog.New(io.Discard).With().Timestamp().Logger()
 
 	templatePath, _ = filepath.Abs("../../internal/pkg/pct/testdata/examples")
 
