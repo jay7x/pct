@@ -3,14 +3,13 @@ package install_test
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"path"
 	"path/filepath"
 	"testing"
 
 	"github.com/jay7x/pct/pkg/config_processor"
-
 	"github.com/jay7x/pct/pkg/install"
 	"github.com/jay7x/pct/pkg/mock"
 	"github.com/spf13/afero"
@@ -282,7 +281,7 @@ func TestInstall(t *testing.T) {
 					RequestResponse: &http.Response{
 						StatusCode: 404,
 						// We still need the body to exist and be a reader, just with empty bytes
-						Body: ioutil.NopCloser(bytes.NewReader([]byte{})),
+						Body: io.NopCloser(bytes.NewReader([]byte{})),
 					},
 				},
 			},
@@ -316,7 +315,7 @@ func TestInstall(t *testing.T) {
 				get: mock.GetResponse{
 					RequestResponse: &http.Response{
 						StatusCode: 200,
-						Body:       ioutil.NopCloser(bytes.NewReader(tarballBytes)),
+						Body:       io.NopCloser(bytes.NewReader(tarballBytes)),
 					},
 				},
 			},
@@ -424,17 +423,16 @@ func TestInstall(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			fs := afero.NewMemMapFs()
 			afs := &afero.Afero{Fs: fs}
 
 			for _, path := range tt.mocks.dirs {
-				afs.Mkdir(path, 0750) //nolint:gosec,errcheck // this result is not used in a secure application
+				_ = afs.Mkdir(path, 0o0750)
 			}
 
 			for file, content := range tt.mocks.files {
-				config, _ := afs.Create(file) //nolint:gosec,errcheck // this result is not used in a secure application
-				config.Write([]byte(content)) //nolint:errcheck
+				config, _ := afs.Create(file)
+				_, _ = config.WriteString(content)
 			}
 
 			installer := &install.Installer{
@@ -497,7 +495,7 @@ func TestInstaller_InstallFromConfig(t *testing.T) {
 			},
 			args: args{configFile: filepath.Join(extractionPath, "pct-config.yml"), targetDir: extractionPath},
 			expected: expected{
-				filepath: filepath.Join(extractionPath, "puppetlabs/good-project/0.1.0"),
+				filepath: filepath.Join(extractionPath, "puppetlabs", "good-project", "0.1.0"),
 			},
 			mocks: mocks{
 				dirs: []string{
@@ -526,71 +524,70 @@ func TestInstaller_InstallFromConfig(t *testing.T) {
 			},
 		},
 		// Neither of these tests work. Most likely a problem with the AFS.Rename(path1, path2) function (pkg/install/install.go:202)
-		//{
-		//	name: "Force installs over a template with the same namespaced path",
-		//	mockInstallConfig: mockInstallConfig{
-		//		metadata: config_processor.ConfigMetadata{
-		//			Author:  "puppetlabs",
-		//			Id:      "good-project",
-		//			Version: "0.1.0",
-		//		},
-		//		expectedConfigFile: filepath.Join(extractionPath, "good-project", "pct-config.yml"),
-		//	},
-		//	args: args{configFile: filepath.Join(extractionPath, "pct-config.yml"), targetDir: extractionPath, force: true},
-		//	expected: expected{
-		//		filepath: filepath.Join(extractionPath, "puppetlabs/good-project/0.1.0"),
-		//	},
-		//	mocks: mocks{
-		//		dirs: []string{
-		//			extractionPath,
-		//		},
-		//		files: map[string]string{  // Writes a config file to namespaced path to simulate a previously installed template
-		//			filepath.Join(extractionPath, "puppetlabs/good-project/0.1.0/pct-config.yml"): "",
-		//			filepath.Join(extractionPath, "good-project", "pct-config.yml"): "",
-		//		},
-		//	},
-		//},
-		//{
-		//	name: "Fails to install as a template already exists on the namespaced path and force is false",
-		//	mockInstallConfig: mockInstallConfig{
-		//		metadata: config_processor.ConfigMetadata{
-		//			Author:  "puppetlabs",
-		//			Id:      "good-project",
-		//			Version: "0.1.0",
-		//		},
-		//		expectedConfigFile: filepath.Join(extractionPath, "good-project", "pct-config.yml"),
-		//	},
-		//	args: args{configFile: filepath.Join(extractionPath, "good-project", "pct-config.yml"), targetDir: extractionPath, force: false},
-		//	expected: expected{
-		//		filepath: filepath.Join(extractionPath, "puppetlabs/good-project/0.1.0"),
-		//		errorMsg: "Template already installed",
-		//	},
-		//	mocks: mocks{
-		//		dirs: []string{
-		//			extractionPath,
-		//			filepath.Join(extractionPath, "puppetlabs/good-project/0.1.0"),
-		//		},
-		//		files: map[string]string{  // Writes a config file to namespaced path to simulate a previously installed template
-		//			filepath.Join(extractionPath, "puppetlabs/good-project/0.1.0/pct-config.yml"): "test1",
-		//			filepath.Join(extractionPath, "puppetlabs/good-project/0.1.0/content/testfile"): "test1",
-		//			filepath.Join(extractionPath, "good-project", "pct-config.yml"): "test2",
-		//		},
-		//	},
-		//},
+		// {
+		// 	name: "Force installs over a template with the same namespaced path",
+		// 	mockInstallConfig: mockInstallConfig{
+		// 		metadata: config_processor.ConfigMetadata{
+		// 			Author:  "puppetlabs",
+		// 			Id:      "good-project",
+		// 			Version: "0.1.0",
+		// 		},
+		// 		expectedConfigFile: filepath.Join(extractionPath, "good-project", "pct-config.yml"),
+		// 	},
+		// 	args: args{configFile: filepath.Join(extractionPath, "pct-config.yml"), targetDir: extractionPath, force: true},
+		// 	expected: expected{
+		// 		filepath: filepath.Join(extractionPath, "puppetlabs/good-project/0.1.0"),
+		// 	},
+		// 	mocks: mocks{
+		// 		dirs: []string{
+		// 			extractionPath,
+		// 		},
+		// 		files: map[string]string{  // Writes a config file to namespaced path to simulate a previously installed template
+		// 			filepath.Join(extractionPath, "puppetlabs/good-project/0.1.0/pct-config.yml"): "",
+		// 			filepath.Join(extractionPath, "good-project", "pct-config.yml"): "",
+		// 		},
+		// 	},
+		// },
+		// {
+		// 	name: "Fails to install as a template already exists on the namespaced path and force is false",
+		// 	mockInstallConfig: mockInstallConfig{
+		// 		metadata: config_processor.ConfigMetadata{
+		// 			Author:  "puppetlabs",
+		// 			Id:      "good-project",
+		// 			Version: "0.1.0",
+		// 		},
+		// 		expectedConfigFile: filepath.Join(extractionPath, "good-project", "pct-config.yml"),
+		// 	},
+		// 	args: args{configFile: filepath.Join(extractionPath, "good-project", "pct-config.yml"), targetDir: extractionPath, force: false},
+		// 	expected: expected{
+		// 		filepath: filepath.Join(extractionPath, "puppetlabs/good-project/0.1.0"),
+		// 		errorMsg: "Template already installed",
+		// 	},
+		// 	mocks: mocks{
+		// 		dirs: []string{
+		// 			extractionPath,
+		// 			filepath.Join(extractionPath, "puppetlabs/good-project/0.1.0"),
+		// 		},
+		// 		files: map[string]string{  // Writes a config file to namespaced path to simulate a previously installed template
+		// 			filepath.Join(extractionPath, "puppetlabs/good-project/0.1.0/pct-config.yml"): "test1",
+		// 			filepath.Join(extractionPath, "puppetlabs/good-project/0.1.0/content/testfile"): "test1",
+		// 			filepath.Join(extractionPath, "good-project", "pct-config.yml"): "test2",
+		// 		},
+		// 	},
+		// },
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			fs := afero.NewMemMapFs()
 			afs := &afero.Afero{Fs: fs}
 
 			for _, path := range tt.mocks.dirs {
-				afs.Mkdir(path, 0750) //nolint:gosec,errcheck // this result is not used in a secure application
+				_ = afs.Mkdir(path, 0o0750)
 			}
 
 			for file, content := range tt.mocks.files {
-				config, _ := afs.Create(file) //nolint:gosec,errcheck // this result is not used in a secure application
-				config.Write([]byte(content)) //nolint:errcheck
+				config, _ := afs.Create(file)
+				_, _ = config.WriteString(content)
 			}
 
 			p := &install.Installer{

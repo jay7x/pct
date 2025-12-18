@@ -19,7 +19,6 @@ var (
 	LocalTemplateCache string
 
 	debug bool
-	// format string
 )
 
 func InitLogger() {
@@ -64,7 +63,6 @@ func CreateRootCommand() *cobra.Command {
 	cobra.CheckErr(err)
 
 	tmp.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "enable debug output")
-	// tmp.PersistentFlags().StringVarP(&format, "format", "f", "junit", "formating (default is junit)")
 
 	return tmp
 }
@@ -91,7 +89,7 @@ func InitConfig() {
 // and also the fully formatted command as passed with arguments/flags.
 // Idea borrowed from carolynvs/porter:
 // https://github.com/carolynvs/porter/blob/ccca10a63627e328616c1006600153da8411a438/cmd/porter/main.go
-func GetCalledCommand(cmd *cobra.Command) (string, string) {
+func GetCalledCommand(cmd *cobra.Command) (calledCmd string, calledArgs string) {
 	if len(os.Args) < 2 {
 		return "", ""
 	}

@@ -37,7 +37,6 @@ func (bc *BuildCommand) CreateCommand() *cobra.Command {
 }
 
 func (bc *BuildCommand) preExecute(cmd *cobra.Command, args []string) error {
-
 	wd, err := os.Getwd()
 	log.Trace().Msgf("WD: %v", wd)
 

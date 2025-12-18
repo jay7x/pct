@@ -2,7 +2,7 @@ package pct_test
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -20,7 +20,7 @@ import (
 
 func TestMain(m *testing.M) {
 	// hide logging output
-	log.Logger = zerolog.New(ioutil.Discard).With().Timestamp().Logger()
+	log.Logger = zerolog.New(io.Discard).With().Timestamp().Logger()
 	os.Exit(m.Run())
 }
 
@@ -228,14 +228,14 @@ Summary: {{.example_replace.summary}}`,
 
 			// Create the template
 			contentDir := filepath.Join(tt.args.info.TemplateDirPath, "content")
-			afs.MkdirAll(contentDir, 0750) //nolint:errcheck
+			_ = afs.MkdirAll(contentDir, 0o0750)
 			// Create template config
 			config, _ := afs.Create(filepath.Join(tt.args.info.TemplateDirPath, "pct-config.yml"))
-			config.Write([]byte(tt.args.templateConfig)) //nolint:errcheck
+			_, _ = config.WriteString(tt.args.templateConfig)
 			// Create the contents
 			for file, content := range tt.args.templateContent {
 				nf, _ := afs.Create(filepath.Join(contentDir, file))
-				nf.Write([]byte(content)) //nolint:errcheck
+				_, _ = nf.WriteString(content)
 			}
 
 			p := &pct.Pct{
@@ -311,14 +311,14 @@ template:
 			if tt.args.setup {
 				// Create the template
 				contentDir := filepath.Join(tt.args.templateDirPath, "content")
-				afs.MkdirAll(tt.args.templateDirPath, 0750) //nolint:errcheck
+				_ = afs.MkdirAll(tt.args.templateDirPath, 0o0750)
 				// Create template config
 				config, _ := afs.Create(filepath.Join(tt.args.templateDirPath, "pct-config.yml"))
-				config.Write([]byte(tt.args.templateConfig)) //nolint:errcheck
+				_, _ = config.WriteString(tt.args.templateConfig)
 				// Create the contents
 				for file, content := range tt.args.templateContent {
 					nf, _ := afs.Create(filepath.Join(contentDir, file))
-					nf.Write([]byte(content)) //nolint:errcheck
+					_, _ = nf.WriteString(content)
 				}
 			}
 
@@ -434,7 +434,8 @@ func TestDisplayDefaults(t *testing.T) {
 			var output map[string]interface{}
 			var expected map[string]interface{}
 
-			if tt.format == "table" {
+			switch tt.format {
+			case "table":
 				err := yaml.Unmarshal([]byte(returnString), &output)
 				if err != nil {
 					assert.Fail(t, "returned data is not YAML")
@@ -444,7 +445,7 @@ func TestDisplayDefaults(t *testing.T) {
 				if err != nil {
 					assert.Fail(t, "expected data is not YAML")
 				}
-			} else if tt.format == "json" {
+			case "json":
 				err := json.Unmarshal([]byte(returnString), &output)
 				if err != nil {
 					assert.Fail(t, "returned data is not JSON")
@@ -776,10 +777,10 @@ template:
 			// Create the template
 			for _, st := range tt.args.stubbedConfigs {
 				templateDir := filepath.Join(tt.args.templatePath, st.relativeConfigPath)
-				afs.MkdirAll(templateDir, 0750) //nolint:errcheck
+				_ = afs.MkdirAll(templateDir, 0o0750)
 				// Create template config
 				config, _ := afs.Create(filepath.Join(templateDir, "pct-config.yml"))
-				config.Write([]byte(st.configContent)) //nolint:errcheck
+				_, _ = config.WriteString(st.configContent)
 			}
 
 			p := &pct.Pct{
@@ -951,7 +952,7 @@ template:
 // 			},
 // 		},
 // 		{
-// 			name: "with a non existant config, returns default config",
+// 			name: "with a non existent config, returns default config",
 // 			args: args{
 // 				info: pct.DeployInfo{
 // 					TargetName: "good-project",
@@ -1023,7 +1024,7 @@ template:
 // 			},
 // 		},
 // 		{
-// 			name: "returns empty struct from non-existant config file",
+// 			name: "returns empty struct from non-existent config file",
 // 			args: args{
 // 				configFile: "testdata/examples/does-not-exist-project/pct.yml",
 // 			},
@@ -1067,7 +1068,7 @@ template:
 // 		{
 // 			name: "returns nil if file does not exist",
 // 			args: args{
-// 				fileName: "testdata/examples/non-existant-project/content/notthere.txt.tmpl",
+// 				fileName: "testdata/examples/non-existent-project/content/notthere.txt.tmpl",
 // 				vars: map[string]interface{}{
 // 					"example_data": "wakka",
 // 				},

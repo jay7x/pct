@@ -118,9 +118,9 @@ foo: bar
 
 			if tt.mockConfigFile {
 				dir := filepath.Dir(tt.configFilePath)
-				afs.Mkdir(dir, 0750)                       //nolint:gosec,errcheck // this result is not used in a secure application
-				config, _ := afs.Create(tt.configFilePath) //nolint:gosec,errcheck // this result is not used in a secure application
-				config.Write([]byte(tt.configFileYaml))    //nolint:errcheck
+				_ = afs.Mkdir(dir, 0o0750)
+				config, _ := afs.Create(tt.configFilePath)
+				_, _ = config.WriteString(tt.configFileYaml)
 			}
 
 			configProcessor := pct_config_processor.PctConfigProcessor{AFS: afs}
@@ -200,10 +200,10 @@ template:
 			}
 
 			// Create all useful directories
-			afs.MkdirAll(configParentPath, 0750) //nolint:gosec,errcheck
+			_ = afs.MkdirAll(configParentPath, 0o0750)
 			if tt.templateConfig != "" {
 				config, _ := afs.Create(tt.args.configFile)
-				config.Write([]byte(tt.templateConfig)) //nolint:errcheck
+				_, _ = config.WriteString(tt.templateConfig)
 			}
 
 			gotMetadata, err := p.GetConfigMetadata(tt.args.configFile)
@@ -283,10 +283,10 @@ template:
 			}
 
 			// Create all useful directories
-			afs.MkdirAll(configParentPath, 0750) //nolint:gosec,errcheck
+			_ = afs.MkdirAll(configParentPath, 0o0750)
 			if tt.templateConfig != "" {
 				config, _ := afs.Create(tt.args.configFile)
-				config.Write([]byte(tt.templateConfig)) //nolint:errcheck
+				_, _ = config.WriteString(tt.templateConfig)
 			}
 
 			gotInfo, err := p.ReadConfig(tt.args.configFile)

@@ -100,19 +100,19 @@ func flagCompletion(cmd *cobra.Command, args []string, toComplete string) ([]str
 }
 
 func execute(cmd *cobra.Command, args []string) error {
-	docs := docsApi.ParsedDocsCache
+	myDocs := docsApi.ParsedDocsCache
 	if listTopics {
 		if format == "" {
 			format = "table"
 		}
 		if category != "" {
-			docs = docsApi.FilterByCategory(category, docs)
+			myDocs = docsApi.FilterByCategory(category, myDocs)
 		}
 		if tag != "" {
-			docs = docsApi.FilterByTag(tag, docs)
+			myDocs = docsApi.FilterByTag(tag, myDocs)
 		}
 		// If there's only one match, should we render the matching doc?
-		docsApi.FormatFrontMatter(format, docs)
+		docsApi.FormatFrontMatter(format, myDocs)
 	} else if topic != "" {
 		doc, err := docsApi.SelectDocument(topic, docsApi.ParsedDocsCache)
 		if err != nil {

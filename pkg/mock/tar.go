@@ -17,7 +17,6 @@ type Tar struct {
 }
 
 func (t *Tar) Tar(source, target string) (tarFilePath string, err error) {
-
 	if t.ErrResponse {
 		return "", fmt.Errorf("tar error")
 	}

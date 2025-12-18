@@ -1,6 +1,7 @@
 package testutils
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -8,6 +9,7 @@ import (
 	"strings"
 	"syscall"
 	"testing"
+	"time"
 
 	"github.com/rs/zerolog/log"
 )
@@ -27,11 +29,13 @@ func SkipAcceptanceTest(t *testing.T) {
 // Run Command takes a command to execute and the directory in which to execute the command.
 // if wd is and empty string it will default to the current working directory
 func RunCommand(cmdString string, wd string) (stdout string, stderr string, exitCode int) {
-	cmds := strings.Split(cmdString, " ")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
 
+	cmds := strings.Split(cmdString, " ")
 	cmds = toolArgsAsSingleArg(cmds) // Remove when GH-52 is resolved
 
-	cmd := exec.Command(cmds[0], cmds[1:]...) // #nosec // used only for testing
+	cmd := exec.CommandContext(ctx, cmds[0], cmds[1:]...) // #nosec // used only for testing
 	if wd != "" {
 		cmd.Dir = wd
 	}
@@ -39,8 +43,11 @@ func RunCommand(cmdString string, wd string) (stdout string, stderr string, exit
 	exitCode = 0
 
 	if err != nil {
+		if ctx.Err() == context.DeadlineExceeded {
+			panic("Command timed out")
+		}
 		stderr = err.Error()
-		// todo: double check that error statuss work on Windows
+		// todo: double check that error status work on Windows
 		if msg, ok := err.(*exec.ExitError); ok { // there is error code
 			exitCode = msg.Sys().(syscall.WaitStatus).ExitStatus()
 		}
