@@ -1,6 +1,6 @@
 module github.com/jay7x/pct
 
-go 1.24
+go 1.24.0
 
 require (
 	github.com/charmbracelet/glamour v0.10.0
@@ -15,7 +15,7 @@ require (
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/text v0.28.0
+	golang.org/x/text v0.32.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
