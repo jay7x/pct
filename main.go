@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/jay7x/pct/internal/pkg/pct"
 	"github.com/jay7x/pct/internal/pkg/pct_config_processor"
 	"github.com/jay7x/pct/pkg/exec_runner"
 
@@ -55,7 +56,7 @@ func main() {
 			Gzip:            &gzip.Gzip{AFS: &afero.Afero{Fs: fs}},
 			AFS:             &afero.Afero{Fs: fs},
 			ConfigProcessor: &pct_config_processor.PctConfigProcessor{AFS: &afero.Afero{Fs: fs}},
-			ConfigFile:      "pct-config.yml",
+			ConfigFile:      pct.TemplateConfigFileName,
 		},
 	}
 	rootCmd.AddCommand(buildCmd.CreateCommand())
@@ -72,7 +73,7 @@ func main() {
 			ConfigProcessor: &pct_config_processor.PctConfigProcessor{
 				AFS: &afs,
 			},
-			ConfigFileName: "pct-config.yml",
+			ConfigFileName: pct.TemplateConfigFileName,
 		},
 		AFS: &afs,
 	}
