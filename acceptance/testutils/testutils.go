@@ -100,7 +100,7 @@ func toolArgsAsSingleArg(cmds []string) []string {
 			toolArgsFragmentIndex = i
 		}
 		if toolArgsFragmentIndex > 0 {
-			reassembled.WriteString(fmt.Sprintf("%s ", arg))
+			fmt.Fprintf(&reassembled, "%s ", arg)
 		}
 	}
 

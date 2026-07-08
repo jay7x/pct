@@ -7,6 +7,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	shellBash = "bash"
+	shellFish = "fish"
+	shellPwsh = "pwsh"
+	shellZsh  = "zsh"
+)
+
 func CreateCompletionCommand() *cobra.Command {
 	tmp := &cobra.Command{
 		Use:   "completion",
@@ -49,18 +56,18 @@ PowerShell:
 	# To load completions for every new session, run:
 	PS> pct completion powershell > pct.ps1
 	# and source this file from your PowerShell profile.`,
-		ValidArgs: []string{"bash", "fish", "pwsh", "zsh"},
+		ValidArgs: []string{shellBash, shellFish, shellPwsh, shellZsh},
 		Args:      cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
 			switch args[0] {
-			case "bash":
+			case shellBash:
 				err = cmd.Root().GenBashCompletion(os.Stdout)
-			case "fish":
+			case shellFish:
 				err = cmd.Root().GenFishCompletion(os.Stdout, true)
-			case "pwsh":
+			case shellPwsh:
 				err = cmd.Root().GenPowerShellCompletionWithDesc(os.Stdout)
-			case "zsh":
+			case shellZsh:
 				err = cmd.Root().GenZshCompletion(os.Stdout)
 			default:
 				log.Printf("unsupported shell type %q", args[0])

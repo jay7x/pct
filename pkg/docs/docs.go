@@ -211,7 +211,7 @@ func (d *Docs) FormatFrontMatter(format string, docs []MarkdownDoc) {
 func (d *Docs) RenderDocument(doc MarkdownDoc) (string, error) {
 	// Add the title since it's captured in frontmatter and not raw markdown
 	var bodyWithTitle strings.Builder
-	bodyWithTitle.WriteString(fmt.Sprintf("# %s\n", doc.FrontMatter.Title.Long))
+	fmt.Fprintf(&bodyWithTitle, "# %s\n", doc.FrontMatter.Title.Long)
 	bodyWithTitle.WriteString(doc.Body)
 	return d.Render(bodyWithTitle.String())
 }
