@@ -31,7 +31,6 @@ func CreateCommand() *cobra.Command {
 	tmp := &cobra.Command{
 		Use:               "new <template> [flags]",
 		Short:             "Creates a Puppet project or other artifact based on a template",
-		Long:              `Creates a Puppet project or other artifact based on a template`,
 		Args:              validateArgCount,
 		ValidArgsFunction: flagCompletion,
 		PreRunE:           preExecute,

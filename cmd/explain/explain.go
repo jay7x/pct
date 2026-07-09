@@ -8,6 +8,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	formatTable = "table"
+	formatJSON  = "json"
+)
+
 var (
 	docsApi    *docs.Docs
 	listTopics bool
@@ -41,7 +46,7 @@ func CreateCommand() *cobra.Command {
 
 	cmd.Flags().StringVarP(&format, "format", "f", "human", "display output in human or json format")
 	err := cmd.RegisterFlagCompletionFunc("format", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return []string{"table", "json"}, cobra.ShellCompDirectiveNoFileComp
+		return []string{formatTable, formatJSON}, cobra.ShellCompDirectiveNoFileComp
 	})
 	cobra.CheckErr(err)
 
@@ -103,7 +108,7 @@ func execute(cmd *cobra.Command, args []string) error {
 	myDocs := docsApi.ParsedDocsCache
 	if listTopics {
 		if format == "" {
-			format = "table"
+			format = formatTable
 		}
 		if category != "" {
 			myDocs = docsApi.FilterByCategory(category, myDocs)
