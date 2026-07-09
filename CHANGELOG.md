@@ -11,21 +11,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.6.0]
+
+This is first release after repository was cloned to jay7x namespace!
+
 ### Added
 
-- [(GH-342)](https://github.com/puppetlabs/pct/issues/342) The `build` package as a genericized public package for turning packages with a config file and content folder into `tar.gz` files.
-
-### Changed
-
-- [(GH-342)](https://github.com/puppetlabs/pct/issues/342) Improved the messaging for `build` failures to point to the full path of the config being processed.
+- add `explain` command for rendering documentation in the terminal by @da-ar in #323 (was pending unreleased in puppetlabs space)
 
 ### Fixed
 
-- [(GH-285)](https://github.com/puppetlabs/pct/issues/285) Ensure running PCT without arguments does not fail unexpectedly.
-- [(GH-287)](https://github.com/puppetlabs/pct/issues/287) Ensure a misconfigured telemetry binary fails early and cleanly.
-- [(GH-312)](https://github.com/puppetlabs/pct/issues/312) Ensure that the format flag correctly autocompletes valid format options.
+- resolve A LOT of `gitlabci-lint` issues
+
+### Changed
+
+- rename `puppetlabs/pct` to `jay7x/pct` everywhere
+- all build deps are updated to their current versions
+- Go version is updated to 1.26
+- add [jay7x/pct-templates](https://github.com/jay7x/pct-templates) as a submodule
+- CI & release workflows are simplified significantly
+- change version output to include a trailing newline and the correct repository URL
+
+### Removed
+
+- drop telemetry support completely
 
 ## [0.5.0]
+
 ### Added
 
 - [(GH-222)](https://github.com/puppetlabs/pct/issues/222) Telemetry to the binary, which will report the operating system type and architecture when a command is run; the implementation allows for two binaries: one with telemetry configured and enabled, and one _without_ the telemetry included at all. <!-- For more information, see our [telemetry blog post](link to blog). -->
@@ -91,7 +103,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [(GH-29)](https://github.com/puppetlabs/pct/issues/29) Error if template not found
 
-[Unreleased]: https://github.com/puppetlabs/pct/compare/0.4.0..main
+[Unreleased]: https://github.com/jay7x/pct/compare/v0.6.0..main
+[v0.6.0]: https://github.com/jay7x/pct/releases/tag/v0.6.0
 [0.5.0]: https://github.com/puppetlabs/pct/releases/tag/0.5.0
 [0.4.0]: https://github.com/puppetlabs/pct/releases/tag/0.4.0
 [0.3.0]: https://github.com/puppetlabs/pct/releases/tag/0.3.0
