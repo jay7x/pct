@@ -2,7 +2,6 @@ version: 2
 project_name: pct
 
 release:
-  name_template: "PCT {{.Version}}"
   prerelease: auto
 
 before:
