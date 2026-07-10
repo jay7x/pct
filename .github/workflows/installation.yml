@@ -25,37 +25,22 @@ jobs:
       with:
         fetch-depth: 0
         persist-credentials: false
-    - name: Get Latest Tag (Windows)
-      id: latest_tag
-      if: runner.os == 'Windows'
-      run: |
-        $TagVersion = git tag --list |
-          Where-Object { $_ -match '^\d+\.\d+\.\d+$' } |
-          Sort-Object -Descending |
-          Select-Object -First 1
-        echo "::set-output name=tag::$TagVersion"
     - name: Install PCT (Windows)
       if: runner.os == 'Windows'
       shell: pwsh
       run: |
-        . .\scripts\install.ps1; Install-Pct
+        .\scripts\install.ps1
     - name: Validate install (Windows)
       if: runner.os == 'Windows'
+      shell: pwsh
       run: |
-        $HomeDir = Get-Item ~ | Select-Object -ExpandProperty FullName
-        $PctPath = "${HomeDir}\.puppetlabs\pct\pct.exe"
-        $verInfo = & $PctPath --version |
-          Select-Object -First 1 |
-          ForEach-Object { $_ -split " " } |
-          Select-Object -Skip 1 -First 2
-        if (& $PctPath --version | Out-String -Stream | Select-String -Pattern '${{ steps.latest_tag.outputs.tag }}') {
-          exit 0
-        } else {
-          exit 1
-        }
+        & "$env:USERPROFILE\.puppetlabs\pct\pct.exe" --version |
+          Select-String "pct $((git tag --list |
+            Where-Object { $_ -match '^v\d+\.\d+\.\d+$' } |
+            Sort-Object -Descending | Select-Object -First 1).TrimStart('v'))"
     - name: Install PCT (Unix)
       if: runner.os != 'Windows'
       run: ./scripts/install.sh
     - name: Validate install (Unix)
       if: runner.os != 'Windows'
-      run: $HOME/.puppetlabs/pct/pct --version | grep "pct $(git tag | tail -n 1)"
+      run: $HOME/.puppetlabs/pct/pct --version | grep "pct $(git tag | awk -F'v' 'END{print $2}')"

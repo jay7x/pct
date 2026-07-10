@@ -1,86 +1,94 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 
-ARCH="x86_64"
-OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
-EXT=".tar.gz"
+ORG='jay7x'
+REPO='pct'
+APP_PKG_NAME='pct'
 
-ORG="jay7x"
-REPO="pct"
-APP_PKG_NAME="pct"
+ARCH=''
+OS=''
+CHECKSUM=''
+FILENAME=''
+VERSION=''
 
-FILE=""
-CHECKSUM=""
+cleanup() {
+	rm -f /tmp/pct_install_*
+}
+trap cleanup EXIT
 
 logDebug() {
-  if [ ! -z "$PCT_INSTALL_DEBUG" ]; then
-    echo "$1"
-  fi
+	if [ -n "${PCT_INSTALL_DEBUG-}" ]; then
+		echo "$1" >&2
+	fi
+}
+
+setVars() {
+	case "$(arch)" in
+	'aarch64' | 'arm64') ARCH='arm64' ;;
+	'x86_64' | 'amd64') ARCH='amd64' ;;
+	*)
+		echo "Unsupported arch '$(arch)'!" >&2
+		exit 1
+		;;
+	esac
+	OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+}
+
+fetchUrl() {
+	local uri="$1"; shift
+	local file="$1"; shift
+
+	resp=$(curl -sL "$uri" -o "$file" --write-out "%{http_code}")
+	logDebug "GET ${uri} | Response: ${resp}"
+
+	if [ "$resp" -ne 200 ]; then
+		echo "Unable to fetch '${uri}'" >&2
+		exit 1
+	fi
 }
 
 getChecksums() {
-  for i in {1..5}; do
-    FILE="${APP_PKG_NAME}_${OS}_${ARCH}${EXT}"
-    checksumURL="https://github.com/${ORG}/${REPO}/releases/latest/download/checksums.txt"
-    resp=$(curl -Ls "${checksumURL}" -o /tmp/pct_checksums.txt --write-out "%{http_code}")
-    respCode=$(echo "${resp}" | tail -n 1)
-    logDebug "GET ${checksumURL} | Resp: ${resp}"
-    if [ "${respCode}" -ne 200 ]; then
-      echo "Fetching checksums.txt failed on attempt ${i}, retrying..."
-      sleep 5
-    else
-      CHECKSUM=$(grep " ${FILE}" /tmp/pct_checksums.txt | cut -d ' ' -f 1)
-      return 0
-    fi
-  done
-  echo "Fetching checksums.txt failed after max retry attempts"
-  exit 1
+	local checksumURL="https://github.com/${ORG}/${REPO}/releases/latest/download/checksums.txt"
+	local filenameRegex="${APP_PKG_NAME}_([0-9.]+)_${OS}_${ARCH}.tar.gz"
+	local tmpFile="/tmp/pct_install_checksums.txt"
+
+	fetchUrl "$checksumURL" "$tmpFile"
+
+	CHECKSUM=$(awk "/  ${filenameRegex}/{print \$1}" < "$tmpFile")
+	FILENAME=$(awk "/  ${filenameRegex}/{print \$2}" < "$tmpFile")
+	VERSION=$(awk -F'_' '{print $2}' <<< "$FILENAME")
 }
 
 downloadLatestRelease() {
-  destination="${HOME}/.puppetlabs/pct"
+	local destination="${HOME}/.puppetlabs/pct"
+	local downloadURL="https://github.com/${ORG}/${REPO}/releases/download/v${VERSION}/${FILENAME}"
+	local tmpFile="/tmp/${FILENAME}"
 
-  [ -d "${destination}" ] || mkdir -p "${destination}"
+	mkdir -p "$destination"
 
-  echo "Downloading and extracting ${APP_PKG_NAME} to ${destination}"
+	echo "Downloading and extracting ${APP_PKG_NAME} v${VERSION} to ${destination}..." >&2
 
-  downloadURL="https://github.com/${ORG}/${REPO}/releases/latest/download/${FILE}"
+	fetchUrl "$downloadURL" "$tmpFile"
 
-  for i in {1..5}; do
-    resp=$(curl -Ls "${downloadURL}" -o "/tmp/${FILE}" --write-out "%{http_code}")
-    respCode=$(echo "${resp}" | tail -n 1)
-    logDebug "GET ${downloadURL} | Resp: ${resp}"
-    if [ "${respCode}" -ne 200 ]; then
-      echo "Fetching PCT package failed on attempt ${i}, retrying..."
-      sleep 5
-    else
-      downloadChecksumRaw=$(shasum -a 256 "/tmp/${FILE}" || sha256sum "/tmp/${FILE}")
-      downloadChecksum=$(echo "${downloadChecksumRaw}" | cut -d ' ' -f 1)
-      logDebug "Checksum calc for ${FILE}:"
-      logDebug " - Expect checksum: ${CHECKSUM}"
-      logDebug " - Actual checksum: ${downloadChecksum}"
-      if [ "${downloadChecksum}" = "${CHECKSUM}" ]; then
-        logDebug "Extracting /tmp/${FILE} to ${destination}"
-        tar -zxf "/tmp/${FILE}" -C "${destination}"
-        tarStatus=$?
-        logDebug "Removing /tmp/${FILE}"
-        rm -- "/tmp/${FILE}"
-        if [ ${tarStatus} -eq 0 ]; then
-          echo "Remember to add the pct app to your path:"
-					# shellcheck disable=SC2016
-          echo 'export PATH=$PATH:'"${destination}"
-          exit 0
-        else
-          echo "Untar unsuccessful (status code: $tarStatus)"
-          exit 1
-        fi
-      else
-        echo "Checksum verification failed for ${FILE}"
-        exit 1
-      fi
-    fi
-  done
+	actual=$(shasum -a 256 "$tmpFile" 2>/dev/null || sha256sum "$tmpFile")
+	actualChecksum="${actual%% *}"
+
+	if [ "$actualChecksum" != "$CHECKSUM" ]; then
+		echo "Checksum verification failed for ${FILENAME}" >&2
+		exit 1
+	fi
+
+	logDebug "Extracting ${tmpFile} to ${destination}"
+	tar -zxf "$tmpFile" -C "$destination" || {
+		echo "Untar unsuccessful" >&2
+		exit 1
+	}
+
+	echo "Remember to add the pct app to your path:"
+	# shellcheck disable=SC2016
+	echo 'export PATH=$PATH:'"${destination}"
 }
 
+setVars
 getChecksums
 downloadLatestRelease
