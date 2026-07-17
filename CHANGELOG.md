@@ -4,12 +4,19 @@ description: "List of changes made across the different versions of PCT."
 ---
 
 # Changelog
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [v0.7.0]
+
+### Changed
+
+- rewrite install tests by @jay7x in https://github.com/jay7x/pct/pull/72
 
 ## [v0.6.0]
 
@@ -103,7 +110,8 @@ This is first release after repository was cloned to jay7x namespace!
 
 - [(GH-29)](https://github.com/puppetlabs/pct/issues/29) Error if template not found
 
-[Unreleased]: https://github.com/jay7x/pct/compare/v0.6.0..main
+[Unreleased]: https://github.com/jay7x/pct/compare/v0.7.0..main
+[v0.7.0]: https://github.com/jay7x/pct/releases/tag/v0.7.0
 [v0.6.0]: https://github.com/jay7x/pct/releases/tag/v0.6.0
 [0.5.0]: https://github.com/puppetlabs/pct/releases/tag/0.5.0
 [0.4.0]: https://github.com/puppetlabs/pct/releases/tag/0.4.0
