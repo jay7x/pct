@@ -288,11 +288,6 @@ func (p *Pct) Deploy(info DeployInfo) []string {
 	log.Debug().Msgf("Target Name: %s", info.TargetName)
 	log.Debug().Msgf("Target Output: %s", info.TargetOutputDir)
 
-	replacer := strings.NewReplacer(
-		contentDir, info.TargetOutputDir,
-		".tmpl", "",
-	)
-
 	var templateFiles []PuppetContentTemplateFileInfo
 	config := p.processConfiguration(info)
 	err := p.AFS.Walk(contentDir, func(path string, fi os.FileInfo, err error) error {
@@ -302,8 +297,8 @@ func (p *Pct) Deploy(info DeployInfo) []string {
 
 		log.Trace().Msgf("Processing: %s", path)
 
-		targetFile := replacer.Replace(path)
 		relPath, relErr := filepath.Rel(contentDir, path)
+		targetFile := filepath.Join(info.TargetOutputDir, relPath)
 		if relErr == nil {
 			if entry, isPrefix := findRename(relPath, tmpl.Template.Rename); entry != nil {
 				rendered := p.renderTarget(entry.Target, config)

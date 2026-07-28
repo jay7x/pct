@@ -146,7 +146,7 @@ template:
 
 `,
 				templateContent: map[string]string{
-					"replace.txt.tmpl": `This is example text
+					"replace.txt": `This is example text
 
 Summary: {{.example_replace.summary}}`,
 				},
@@ -177,7 +177,7 @@ template:
 
 `,
 				templateContent: map[string]string{
-					"replace.txt.tmpl": `This is example text
+					"replace.txt": `This is example text
 
 Summary: {{.example_replace.summary}}`,
 				},
@@ -341,7 +341,7 @@ template:
 
 `,
 				templateContent: map[string]string{
-					"replace.txt.tmpl": `This is example text
+					"replace.txt": `This is example text
 
 Summary: {{.example_replace.summary}}`,
 				},
