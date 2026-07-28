@@ -44,6 +44,11 @@ const (
 	TemplateTypeProject = "project"
 )
 
+var tmplFuncs = template.FuncMap{
+	"toClassName": utils.ToClassName,
+	"ns2path":     utils.Ns2Path,
+}
+
 // PuppetContentTemplateInfo is the housing struct for marshaling YAML data
 type PuppetContentTemplateInfo struct {
 	Template PuppetContentTemplate `mapstructure:"template"`
@@ -532,11 +537,7 @@ func (p *Pct) readTemplateConfig(configFile string) PuppetContentTemplateInfo {
 func (p *Pct) renderFile(fileName string, vars interface{}) (string, error) {
 	renderedTmpl := template.
 		New(filepath.Base(fileName)).
-		Funcs(
-			template.FuncMap{
-				"toClassName": utils.ToClassName,
-			},
-		)
+		Funcs(tmplFuncs)
 	// This is not ideal, but this function needs to be toggled
 	// if we are running with aferos in memory file system
 	// if the file doesnt exist on the os then check if its part of afero
@@ -565,10 +566,7 @@ func (p *Pct) process(t *template.Template, vars interface{}) string {
 }
 
 func (p *Pct) renderTarget(targetTmpl string, vars map[string]interface{}) string {
-	tmpl := template.New("target").Funcs(template.FuncMap{
-		"toClassName": utils.ToClassName,
-		"ns2path":     utils.Ns2Path,
-	})
+	tmpl := template.New("target").Funcs(tmplFuncs)
 	tmpl, err := tmpl.Parse(targetTmpl)
 	if err != nil {
 		log.Error().Msgf("Error parsing target template: %v", err)
