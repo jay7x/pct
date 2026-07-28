@@ -290,7 +290,6 @@ func (p *Pct) Deploy(info DeployInfo) []string {
 
 	replacer := strings.NewReplacer(
 		contentDir, info.TargetOutputDir,
-		"{{pct_name}}", info.TargetName,
 		".tmpl", "",
 	)
 

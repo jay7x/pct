@@ -146,14 +146,14 @@ template:
 
 `,
 				templateContent: map[string]string{
-					"{{pct_name}}.txt.tmpl": `This is example text
+					"replace.txt.tmpl": `This is example text
 
 Summary: {{.example_replace.summary}}`,
 				},
 			},
 			want: []string{
 				filepath.Join(tmp, "thing"),
-				filepath.Join(tmp, "thing", "woo.txt"),
+				filepath.Join(tmp, "thing", "replace.txt"),
 			},
 		},
 		{
@@ -177,14 +177,14 @@ template:
 
 `,
 				templateContent: map[string]string{
-					"{{pct_name}}.txt.tmpl": `This is example text
+					"replace.txt.tmpl": `This is example text
 
 Summary: {{.example_replace.summary}}`,
 				},
 			},
 			want: []string{
 				tmp,
-				filepath.Join(tmp, filepath.Base(tmp)+".txt"),
+				filepath.Join(tmp, "replace.txt"),
 			},
 		},
 		{
@@ -341,14 +341,14 @@ template:
 
 `,
 				templateContent: map[string]string{
-					"{{pct_name}}.txt.tmpl": `This is example text
+					"replace.txt.tmpl": `This is example text
 
 Summary: {{.example_replace.summary}}`,
 				},
 			},
 			want: []string{
 				tmp,
-				filepath.Join(tmp, "wibble.txt"),
+				filepath.Join(tmp, "replace.txt"),
 			},
 		},
 	}
