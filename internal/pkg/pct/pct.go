@@ -29,8 +29,6 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/afero"
 	"github.com/spf13/viper"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 	"gopkg.in/yaml.v2"
 )
 
@@ -516,9 +514,7 @@ func (p *Pct) renderFile(fileName string, vars interface{}) (string, error) {
 		New(filepath.Base(fileName)).
 		Funcs(
 			template.FuncMap{
-				"toClassName": func(itemName string) string {
-					return cases.Title(language.Und).String(itemName)
-				},
+				"toClassName": utils.ToClassName,
 			},
 		)
 	// This is not ideal, but this function needs to be toggled
