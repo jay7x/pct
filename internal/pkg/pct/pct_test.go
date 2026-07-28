@@ -188,6 +188,139 @@ Summary: {{.example_replace.summary}}`,
 			},
 		},
 		{
+			name: "deploy with rename entry",
+			args: args{
+				info: pct.DeployInfo{
+					SelectedTemplate: "rename-test",
+					TemplateDirPath:  "templates/author/id/0.1.0",
+					TargetOutputDir:  filepath.Join(tmp, "out"),
+					TargetName:       "my_module",
+					PdkInfo: pct.PDKInfo{
+						Version:   "0.1.0",
+						Commit:    "abc12345",
+						BuildDate: "2021/06/27",
+					},
+				},
+				templateConfig: `---
+template:
+  id: rename-test
+  type: item
+  rename:
+    - source: "class.pp"
+      target: "manifests/{{.pct_name}}.pp"
+`,
+				templateContent: map[string]string{
+					"class.pp": "class {{.pct_name}} { }",
+				},
+			},
+			want: []string{
+				filepath.Join(tmp, "out"),
+				filepath.Join(tmp, "out", "manifests", "my_module.pp"),
+			},
+		},
+		{
+			name: "deploy with rename ns2path filter",
+			args: args{
+				info: pct.DeployInfo{
+					SelectedTemplate: "ns2path-test",
+					TemplateDirPath:  "templates/author/id/0.1.0",
+					TargetOutputDir:  filepath.Join(tmp, "out"),
+					TargetName:       "profile::base",
+					PdkInfo: pct.PDKInfo{
+						Version:   "0.1.0",
+						Commit:    "abc12345",
+						BuildDate: "2021/06/27",
+					},
+				},
+				templateConfig: `---
+template:
+  id: ns2path-test
+  type: item
+  rename:
+    - source: "class.pp"
+      target: "manifests/{{.pct_name | ns2path}}.pp"
+`,
+				templateContent: map[string]string{
+					"class.pp": "class {{.pct_name}} { }",
+				},
+			},
+			want: []string{
+				filepath.Join(tmp, "out"),
+				filepath.Join(tmp, "out", "manifests", "profile", "base.pp"),
+			},
+		},
+		{
+			name: "deploy with prefix match explicit override and untemplated files",
+			args: args{
+				info: pct.DeployInfo{
+					SelectedTemplate: "prefix-override-test",
+					TemplateDirPath:  "templates/author/id/0.1.0",
+					TargetOutputDir:  filepath.Join(tmp, "out"),
+					TargetName:       "my_provider",
+					PdkInfo: pct.PDKInfo{
+						Version:   "0.1.0",
+						Commit:    "abc12345",
+						BuildDate: "2021/06/27",
+					},
+				},
+				templateConfig: `---
+template:
+  id: prefix-override-test
+  type: item
+  rename:
+    - source: "provider_dir"
+      target: "lib/puppet/provider/{{.pct_name}}"
+    - source: "provider_dir/provider_spec.rb"
+      target: "lib/puppet/provider/{{.pct_name}}/{{.pct_name}}_spec.rb"
+`,
+				templateContent: map[string]string{
+					"provider_dir/provider.rb":      "code",
+					"provider_dir/provider_spec.rb": "spec",
+					"provider_dir/subdir/helper.rb": "helper",
+				},
+			},
+			want: []string{
+				filepath.Join(tmp, "out"),
+				filepath.Join(tmp, "out", "lib", "puppet", "provider", "my_provider"),
+				filepath.Join(tmp, "out", "lib", "puppet", "provider", "my_provider", "provider.rb"),
+				filepath.Join(tmp, "out", "lib", "puppet", "provider", "my_provider", "my_provider_spec.rb"),
+				filepath.Join(tmp, "out", "lib", "puppet", "provider", "my_provider", "subdir"),
+				filepath.Join(tmp, "out", "lib", "puppet", "provider", "my_provider", "subdir", "helper.rb"),
+			},
+		},
+		{
+			name: "deploy with rename directory entry",
+			args: args{
+				info: pct.DeployInfo{
+					SelectedTemplate: "dir-rename-test",
+					TemplateDirPath:  "templates/author/id/0.1.0",
+					TargetOutputDir:  filepath.Join(tmp, "out"),
+					TargetName:       "my_provider",
+					PdkInfo: pct.PDKInfo{
+						Version:   "0.1.0",
+						Commit:    "abc12345",
+						BuildDate: "2021/06/27",
+					},
+				},
+				templateConfig: `---
+template:
+  id: dir-rename-test
+  type: item
+  rename:
+    - source: "provider_dir"
+      target: "lib/puppet/provider/{{.pct_name}}"
+`,
+				templateContent: map[string]string{
+					"provider_dir/provider.rb": "require 'puppet'",
+				},
+			},
+			want: []string{
+				filepath.Join(tmp, "out"),
+				filepath.Join(tmp, "out", "lib", "puppet", "provider", "my_provider"),
+				filepath.Join(tmp, "out", "lib", "puppet", "provider", "my_provider", "provider.rb"),
+			},
+		},
+		{
 			name: "deploy a item without an outputDir",
 			args: args{
 				info: pct.DeployInfo{

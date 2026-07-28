@@ -53,9 +53,17 @@ type PuppetContentTemplateInfo struct {
 // PuppetContentTemplate houses the actual information about each template
 type PuppetContentTemplate struct {
 	install.ConfigParams `mapstructure:",squash"`
-	Type                 string `mapstructure:"type"`
-	Display              string `mapstructure:"display"`
-	URL                  string `mapstructure:"url"`
+	Type                 string        `mapstructure:"type"`
+	Display              string        `mapstructure:"display"`
+	URL                  string        `mapstructure:"url"`
+	Rename               []RenameEntry `mapstructure:"rename"`
+}
+
+// RenameEntry maps a source file path in the content directory to a target
+// output path using template expressions.
+type RenameEntry struct {
+	Source string `mapstructure:"source"`
+	Target string `mapstructure:"target"`
 }
 
 // PuppetContentTemplateFileInfo represents the resolved target path information
@@ -282,13 +290,26 @@ func (p *Pct) Deploy(info DeployInfo) []string {
 	)
 
 	var templateFiles []PuppetContentTemplateFileInfo
-	err := p.AFS.Walk(contentDir, func(path string, info os.FileInfo, err error) error {
+	config := p.processConfiguration(info)
+	err := p.AFS.Walk(contentDir, func(path string, fi os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
 		log.Trace().Msgf("Processing: %s", path)
+
 		targetFile := replacer.Replace(path)
+		relPath, relErr := filepath.Rel(contentDir, path)
+		if relErr == nil {
+			if entry, isPrefix := findRename(relPath, tmpl.Template.Rename); entry != nil {
+				rendered := p.renderTarget(entry.Target, config)
+				if isPrefix {
+					targetFile = filepath.Join(info.TargetOutputDir, strings.Replace(relPath, entry.Source, rendered, 1))
+				} else {
+					targetFile = filepath.Join(info.TargetOutputDir, rendered)
+				}
+			}
+		}
 		log.Debug().Msgf("Resolved '%s' to '%s'", path, targetFile)
 
 		dir, file := filepath.Split(targetFile)
@@ -297,7 +318,7 @@ func (p *Pct) Deploy(info DeployInfo) []string {
 			TargetFilePath: targetFile,
 			TargetDir:      dir,
 			TargetFile:     file,
-			IsDirectory:    info.IsDir(),
+			IsDirectory:    fi.IsDir(),
 		}
 		log.Trace().Msgf("Processed: %+v", i)
 
@@ -317,7 +338,7 @@ func (p *Pct) Deploy(info DeployInfo) []string {
 				deployed = append(deployed, templateFile.TargetFilePath)
 			}
 		} else {
-			err := p.createTemplateFile(info, templateFile)
+			err := p.createTemplateFile(templateFile, config)
 			if err != nil {
 				log.Error().Msgf("%s", err)
 				continue
@@ -341,9 +362,8 @@ func (p *Pct) createTemplateDirectory(targetDir string) error {
 	return nil
 }
 
-func (p *Pct) createTemplateFile(info DeployInfo, templateFile PuppetContentTemplateFileInfo) error {
+func (p *Pct) createTemplateFile(templateFile PuppetContentTemplateFileInfo, config map[string]interface{}) error {
 	log.Trace().Msgf("Creating: '%s'", templateFile.TargetFilePath)
-	config := p.processConfiguration(info)
 
 	text, err := p.renderFile(templateFile.TemplatePath, config)
 	if err != nil {
@@ -542,6 +562,42 @@ func (p *Pct) process(t *template.Template, vars interface{}) string {
 		return ""
 	}
 	return tmplBytes.String()
+}
+
+func (p *Pct) renderTarget(targetTmpl string, vars map[string]interface{}) string {
+	tmpl := template.New("target").Funcs(template.FuncMap{
+		"toClassName": utils.ToClassName,
+		"ns2path":     utils.Ns2Path,
+	})
+	tmpl, err := tmpl.Parse(targetTmpl)
+	if err != nil {
+		log.Error().Msgf("Error parsing target template: %v", err)
+		return targetTmpl
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, vars)
+	if err != nil {
+		log.Error().Msgf("Error executing target template: %v", err)
+		return targetTmpl
+	}
+	return buf.String()
+}
+
+func findRename(relPath string, entries []RenameEntry) (entry *RenameEntry, isPrefix bool) {
+	for _, e := range entries {
+		if e.Source == relPath {
+			return &e, false
+		}
+	}
+	var best *RenameEntry
+	bestLen := 0
+	for _, e := range entries {
+		if strings.HasPrefix(relPath, e.Source+string(filepath.Separator)) && len(e.Source) > bestLen {
+			best = &e
+			bestLen = len(e.Source)
+		}
+	}
+	return best, best != nil
 }
 
 func (p *Pct) FilterFiles(ss []PuppetContentTemplate, test func(PuppetContentTemplate) bool) (ret []PuppetContentTemplate) {
