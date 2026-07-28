@@ -298,6 +298,9 @@ func (p *Pct) Deploy(info DeployInfo) []string {
 		log.Trace().Msgf("Processing: %s", path)
 
 		relPath, relErr := filepath.Rel(contentDir, path)
+		if relErr == nil {
+			relPath = filepath.ToSlash(relPath)
+		}
 		targetFile := filepath.Join(info.TargetOutputDir, relPath)
 		if relErr == nil {
 			if entry, isPrefix := findRename(relPath, tmpl.Template.Rename); entry != nil {
@@ -576,6 +579,7 @@ func (p *Pct) renderTarget(targetTmpl string, vars map[string]interface{}) strin
 }
 
 func findRename(relPath string, entries []RenameEntry) (entry *RenameEntry, isPrefix bool) {
+	relPath = filepath.ToSlash(relPath)
 	for _, e := range entries {
 		if e.Source == relPath {
 			return &e, false
@@ -584,7 +588,7 @@ func findRename(relPath string, entries []RenameEntry) (entry *RenameEntry, isPr
 	var best *RenameEntry
 	bestLen := 0
 	for _, e := range entries {
-		if strings.HasPrefix(relPath, e.Source+string(filepath.Separator)) && len(e.Source) > bestLen {
+		if strings.HasPrefix(relPath, e.Source+"/") && len(e.Source) > bestLen {
 			best = &e
 			bestLen = len(e.Source)
 		}
