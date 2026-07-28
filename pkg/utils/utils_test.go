@@ -25,6 +25,26 @@ func TestToClassName(t *testing.T) {
 	}
 }
 
+func TestNs2Path(t *testing.T) {
+	tests := []struct {
+		name string
+		arg  string
+		want string
+	}{
+		{"double colon", "profile::base", "profile/base"},
+		{"triple nested", "a::b::c", "a/b/c"},
+		{"no namespace", "foo", "foo"},
+		{"empty string", "", ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Ns2Path(tt.arg); got != tt.want {
+				t.Errorf("Ns2Path() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestContains(t *testing.T) {
 	type args struct {
 		s   []string

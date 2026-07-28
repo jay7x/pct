@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/rs/zerolog/log"
 	"golang.org/x/text/cases"
@@ -68,4 +69,10 @@ func GetDefaultTemplatePath() (string, error) {
 // "my_class" -> "My_class"
 func ToClassName(s string) string {
 	return cases.Title(language.Und).String(s)
+}
+
+// Ns2Path converts a Puppet namespace separator to a file path separator.
+// "profile::base" -> "profile/base"
+func Ns2Path(s string) string {
+	return strings.ReplaceAll(s, "::", "/")
 }
