@@ -10,17 +10,16 @@ Puppet Class or a set of CI files to add to a Puppet Module.
 package pct
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"os/user"
 	"path/filepath"
 	"sort"
 	"strings"
-	"text/template"
 
 	"github.com/hashicorp/go-version"
 	"github.com/jay7x/pct/pkg/install"
+	"github.com/jay7x/pct/pkg/template"
 	"github.com/jay7x/pct/pkg/utils"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/olekukonko/tablewriter"
@@ -44,11 +43,6 @@ const (
 	TemplateTypeProject = "project"
 )
 
-var tmplFuncs = template.FuncMap{
-	"toClassName": utils.ToClassName,
-	"ns2path":     utils.Ns2Path,
-}
-
 // PuppetContentTemplateInfo is the housing struct for marshaling YAML data
 type PuppetContentTemplateInfo struct {
 	Template PuppetContentTemplate `mapstructure:"template"`
@@ -61,6 +55,7 @@ type PuppetContentTemplate struct {
 	Type                 string        `mapstructure:"type"`
 	Display              string        `mapstructure:"display"`
 	URL                  string        `mapstructure:"url"`
+	Engine               string        `mapstructure:"engine"`
 	Rename               []RenameEntry `mapstructure:"rename"`
 }
 
@@ -291,6 +286,12 @@ func (p *Pct) Deploy(info DeployInfo) []string {
 
 	var templateFiles []PuppetContentTemplateFileInfo
 	config := p.processConfiguration(info)
+
+	engineName := tmpl.Template.Engine
+	if engineName == "" {
+		engineName = template.DefaultEngineName
+	}
+
 	err := p.AFS.Walk(contentDir, func(path string, fi os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -305,7 +306,7 @@ func (p *Pct) Deploy(info DeployInfo) []string {
 		targetFile := filepath.Join(info.TargetOutputDir, relPath)
 		if relErr == nil {
 			if entry, isPrefix := findRename(relPath, tmpl.Template.Rename); entry != nil {
-				rendered := p.renderTarget(entry.Target, config)
+				rendered := p.renderTarget(entry.Target, config, engineName)
 				if isPrefix {
 					targetFile = filepath.Join(info.TargetOutputDir, strings.Replace(relPath, entry.Source, rendered, 1))
 				} else {
@@ -341,7 +342,7 @@ func (p *Pct) Deploy(info DeployInfo) []string {
 				deployed = append(deployed, templateFile.TargetFilePath)
 			}
 		} else {
-			err := p.createTemplateFile(templateFile, config)
+			err := p.createTemplateFile(templateFile, config, engineName)
 			if err != nil {
 				log.Error().Msgf("%s", err)
 				continue
@@ -365,10 +366,10 @@ func (p *Pct) createTemplateDirectory(targetDir string) error {
 	return nil
 }
 
-func (p *Pct) createTemplateFile(templateFile PuppetContentTemplateFileInfo, config map[string]interface{}) error {
+func (p *Pct) createTemplateFile(templateFile PuppetContentTemplateFileInfo, config map[string]interface{}, engineName string) error {
 	log.Trace().Msgf("Creating: '%s'", templateFile.TargetFilePath)
 
-	text, err := p.renderFile(templateFile.TemplatePath, config)
+	text, err := p.renderFile(templateFile.TemplatePath, config, engineName)
 	if err != nil {
 		return fmt.Errorf("Failed to create %s", templateFile.TargetFilePath)
 	}
@@ -532,51 +533,36 @@ func (p *Pct) readTemplateConfig(configFile string) PuppetContentTemplateInfo {
 	return config
 }
 
-func (p *Pct) renderFile(fileName string, vars interface{}) (string, error) {
-	renderedTmpl := template.
-		New(filepath.Base(fileName)).
-		Funcs(tmplFuncs)
-	// This is not ideal, but this function needs to be toggled
-	// if we are running with aferos in memory file system
-	// if the file doesnt exist on the os then check if its part of afero
-	tmpl, err := renderedTmpl.ParseFiles(fileName)
-	if os.IsNotExist(err) {
-		tmpl, err = renderedTmpl.ParseFS(p.IOFS, fileName)
-
-		if err != nil {
-			log.Error().Msgf("Error parsing config: %v", err)
-			return "", err
-		}
+func (p *Pct) renderFile(fileName string, vars map[string]interface{}, engineName string) (string, error) {
+	if engineName == "" {
+		engineName = template.DefaultEngineName
 	}
-
-	return p.process(tmpl, vars), nil
+	eng, ok := template.Get(engineName)
+	if !ok {
+		return "", fmt.Errorf("unknown template engine: %s", engineName)
+	}
+	content, err := p.AFS.ReadFile(fileName)
+	if err != nil {
+		return "", fmt.Errorf("Failed to read %s: %w", fileName, err)
+	}
+	return eng.Render(string(content), vars)
 }
 
-func (p *Pct) process(t *template.Template, vars interface{}) string {
-	var tmplBytes bytes.Buffer
-
-	err := t.Execute(&tmplBytes, vars)
-	if err != nil {
-		log.Error().Msgf("Error parsing config: %v", err)
-		return ""
+func (p *Pct) renderTarget(targetTmpl string, vars map[string]interface{}, engineName string) string {
+	if engineName == "" {
+		engineName = template.DefaultEngineName
 	}
-	return tmplBytes.String()
-}
-
-func (p *Pct) renderTarget(targetTmpl string, vars map[string]interface{}) string {
-	tmpl := template.New("target").Funcs(tmplFuncs)
-	tmpl, err := tmpl.Parse(targetTmpl)
-	if err != nil {
-		log.Error().Msgf("Error parsing target template: %v", err)
+	eng, ok := template.Get(engineName)
+	if !ok {
+		log.Error().Msgf("unknown template engine: %s", engineName)
 		return targetTmpl
 	}
-	var buf bytes.Buffer
-	err = tmpl.Execute(&buf, vars)
+	out, err := eng.Render(targetTmpl, vars)
 	if err != nil {
 		log.Error().Msgf("Error executing target template: %v", err)
 		return targetTmpl
 	}
-	return buf.String()
+	return out
 }
 
 func findRename(relPath string, entries []RenameEntry) (entry *RenameEntry, isPrefix bool) {
