@@ -5,8 +5,11 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/rs/zerolog/log"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // contains checks if a string is present in a slice
@@ -60,4 +63,16 @@ func GetDefaultTemplatePath() (string, error) {
 	defaultTemplatePath := filepath.Join(filepath.Dir(execDir), "templates")
 	log.Trace().Msgf("Default template path: %v", defaultTemplatePath)
 	return defaultTemplatePath, nil
+}
+
+// ToClassName capitalises the first letter of a name.
+// "my_class" -> "My_class"
+func ToClassName(s string) string {
+	return cases.Title(language.Und).String(s)
+}
+
+// Ns2Path converts a Puppet namespace separator to a file path separator.
+// "profile::base" -> "profile/base"
+func Ns2Path(s string) string {
+	return strings.ReplaceAll(s, "::", "/")
 }
