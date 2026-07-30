@@ -110,6 +110,45 @@ foo: bar
 `,
 			errorMsg: `The following attributes are missing in .+:\s+\* id\s+\* author\s+\* version`,
 		},
+		{
+			name:           "When config author starts with '.'",
+			mockConfigFile: true,
+			configFilePath: "my/dotfile/author/pct-config.yml",
+
+			configFileYaml: `---
+template:
+  id: test-template
+  author: .hidden
+  version: 0.1.0
+`,
+			errorMsg: `The following attributes are missing in .+:\s+\* author must not start with '\.'`,
+		},
+		{
+			name:           "When config id starts with '.'",
+			mockConfigFile: true,
+			configFilePath: "my/dotfile/id/pct-config.yml",
+
+			configFileYaml: `---
+template:
+  id: .hidden-template
+  author: test-user
+  version: 0.1.0
+`,
+			errorMsg: `The following attributes are missing in .+:\s+\* id must not start with '\.'`,
+		},
+		{
+			name:           "When config author and id both start with '.'",
+			mockConfigFile: true,
+			configFilePath: "my/dotfile/both/pct-config.yml",
+
+			configFileYaml: `---
+template:
+  id: .hidden-template
+  author: .hidden
+  version: 0.1.0
+`,
+			errorMsg: `The following attributes are missing in .+:\s+\* id must not start with '\.'\s+\* author must not start with '\.'`,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
