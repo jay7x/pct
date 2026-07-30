@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/jay7x/pct/internal/pkg/pct"
 	"github.com/jay7x/pct/pkg/config_processor"
@@ -47,8 +48,14 @@ func (p *PctConfigProcessor) CheckConfig(configFile string) error {
 	if info.Template.Id == "" {
 		msg += "  * id\n"
 	}
+	if strings.HasPrefix(info.Template.Id, ".") {
+		msg += "  * id must not start with '.'\n"
+	}
 	if info.Template.Author == "" {
 		msg += "  * author\n"
+	}
+	if strings.HasPrefix(info.Template.Author, ".") {
+		msg += "  * author must not start with '.'\n"
 	}
 	if info.Template.Version == "" {
 		msg += "  * version\n"

@@ -48,7 +48,7 @@ func (ic *InstallCommand) executeInstall(cmd *cobra.Command, args []string) erro
 	var err error = nil
 	if ic.GitUri != "" { // For cloning a template
 		// Create temp folder
-		tempDir, dirErr := ic.AFS.TempDir("", "")
+		tempDir, dirErr := ic.AFS.TempDir(ic.InstallPath, ".pct")
 		defer func() {
 			dirErr := ic.AFS.Remove(tempDir)
 			if dirErr != nil {

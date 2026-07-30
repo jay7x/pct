@@ -55,7 +55,7 @@ func (p *Installer) Install(templatePkg, targetDir string, force bool) (string, 
 	}
 
 	// create a temporary Directory to extract the tar.gz to
-	tempDir, err := p.AFS.TempDir("", "")
+	tempDir, err := p.AFS.TempDir(targetDir, ".pct")
 	defer func() {
 		err := p.AFS.RemoveAll(tempDir)
 		if err != nil {

@@ -10,17 +10,16 @@ Puppet Class or a set of CI files to add to a Puppet Module.
 package pct
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"os/user"
 	"path/filepath"
 	"sort"
 	"strings"
-	"text/template"
 
 	"github.com/hashicorp/go-version"
 	"github.com/jay7x/pct/pkg/install"
+	"github.com/jay7x/pct/pkg/template"
 	"github.com/jay7x/pct/pkg/utils"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/olekukonko/tablewriter"
@@ -44,11 +43,6 @@ const (
 	TemplateTypeProject = "project"
 )
 
-var tmplFuncs = template.FuncMap{
-	"toClassName": utils.ToClassName,
-	"ns2path":     utils.Ns2Path,
-}
-
 // PuppetContentTemplateInfo is the housing struct for marshaling YAML data
 type PuppetContentTemplateInfo struct {
 	Template PuppetContentTemplate `mapstructure:"template"`
@@ -61,6 +55,7 @@ type PuppetContentTemplate struct {
 	Type                 string        `mapstructure:"type"`
 	Display              string        `mapstructure:"display"`
 	URL                  string        `mapstructure:"url"`
+	Engine               string        `mapstructure:"engine"`
 	Rename               []RenameEntry `mapstructure:"rename"`
 }
 
@@ -134,8 +129,6 @@ func (p *Pct) GetInfo(templateDirPath string) (PuppetContentTemplateInfo, error)
 // debug log events
 func (p *Pct) List(templatePath string, templateName string) []PuppetContentTemplate {
 	log.Debug().Msgf("Searching %+v for templates", templatePath)
-	// Triple glob to match author/id/version/TemplateConfigFileName
-	// TODO: Make this backward compatible
 	matches, _ := p.IOFS.Glob(templatePath + "/**/**/**/" + TemplateConfigFileName)
 
 	var tmpls []PuppetContentTemplate
@@ -147,17 +140,6 @@ func (p *Pct) List(templatePath string, templateName string) []PuppetContentTemp
 			tmpls = append(tmpls, i)
 		}
 	}
-	// Temporary workaround to find old layout templates
-	oldMatches, _ := p.IOFS.Glob(templatePath + "/**/" + TemplateConfigFileName)
-	for _, file := range oldMatches {
-		log.Debug().Msgf("Found: %+v", file)
-		i := p.readTemplateConfig(file).Template
-		// Do not write id-less configs (ie, invalid, could not parse) to the return
-		if i.Id != "" {
-			tmpls = append(tmpls, i)
-		}
-	}
-
 	if templateName != "" {
 		log.Debug().Msgf("Filtering for: %s", templateName)
 		tmpls = p.FilterFiles(tmpls, func(f PuppetContentTemplate) bool { return f.Id == templateName })
@@ -195,7 +177,8 @@ func (*Pct) FormatTemplates(tmpls []PuppetContentTemplate, jsonOutput string) (s
 				})),
 			)
 			table.Header([]string{"DisplayName", "Author", "Name", "Type"})
-			for _, v := range tmpls {
+			for i := range tmpls {
+				v := &tmpls[i]
 				_ = table.Append([]string{v.Display, v.Author, v.Id, v.Type})
 			}
 			_ = table.Render()
@@ -290,6 +273,12 @@ func (p *Pct) Deploy(info DeployInfo) []string {
 
 	var templateFiles []PuppetContentTemplateFileInfo
 	config := p.processConfiguration(info)
+
+	engineName := tmpl.Template.Engine
+	if engineName == "" {
+		engineName = template.DefaultEngineName
+	}
+
 	err := p.AFS.Walk(contentDir, func(path string, fi os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -304,7 +293,7 @@ func (p *Pct) Deploy(info DeployInfo) []string {
 		targetFile := filepath.Join(info.TargetOutputDir, relPath)
 		if relErr == nil {
 			if entry, isPrefix := findRename(relPath, tmpl.Template.Rename); entry != nil {
-				rendered := p.renderTarget(entry.Target, config)
+				rendered := p.renderTarget(entry.Target, config, engineName)
 				if isPrefix {
 					targetFile = filepath.Join(info.TargetOutputDir, strings.Replace(relPath, entry.Source, rendered, 1))
 				} else {
@@ -340,7 +329,7 @@ func (p *Pct) Deploy(info DeployInfo) []string {
 				deployed = append(deployed, templateFile.TargetFilePath)
 			}
 		} else {
-			err := p.createTemplateFile(templateFile, config)
+			err := p.createTemplateFile(templateFile, config, engineName)
 			if err != nil {
 				log.Error().Msgf("%s", err)
 				continue
@@ -364,10 +353,10 @@ func (p *Pct) createTemplateDirectory(targetDir string) error {
 	return nil
 }
 
-func (p *Pct) createTemplateFile(templateFile PuppetContentTemplateFileInfo, config map[string]interface{}) error {
+func (p *Pct) createTemplateFile(templateFile PuppetContentTemplateFileInfo, config map[string]interface{}, engineName string) error {
 	log.Trace().Msgf("Creating: '%s'", templateFile.TargetFilePath)
 
-	text, err := p.renderFile(templateFile.TemplatePath, config)
+	text, err := p.renderFile(templateFile.TemplatePath, config, engineName)
 	if err != nil {
 		return fmt.Errorf("Failed to create %s", templateFile.TargetFilePath)
 	}
@@ -531,51 +520,36 @@ func (p *Pct) readTemplateConfig(configFile string) PuppetContentTemplateInfo {
 	return config
 }
 
-func (p *Pct) renderFile(fileName string, vars interface{}) (string, error) {
-	renderedTmpl := template.
-		New(filepath.Base(fileName)).
-		Funcs(tmplFuncs)
-	// This is not ideal, but this function needs to be toggled
-	// if we are running with aferos in memory file system
-	// if the file doesnt exist on the os then check if its part of afero
-	tmpl, err := renderedTmpl.ParseFiles(fileName)
-	if os.IsNotExist(err) {
-		tmpl, err = renderedTmpl.ParseFS(p.IOFS, fileName)
-
-		if err != nil {
-			log.Error().Msgf("Error parsing config: %v", err)
-			return "", err
-		}
+func (p *Pct) renderFile(fileName string, vars map[string]interface{}, engineName string) (string, error) {
+	if engineName == "" {
+		engineName = template.DefaultEngineName
 	}
-
-	return p.process(tmpl, vars), nil
+	eng, ok := template.Get(engineName)
+	if !ok {
+		return "", fmt.Errorf("unknown template engine: %s", engineName)
+	}
+	content, err := p.AFS.ReadFile(fileName)
+	if err != nil {
+		return "", fmt.Errorf("Failed to read %s: %w", fileName, err)
+	}
+	return eng.Render(string(content), vars)
 }
 
-func (p *Pct) process(t *template.Template, vars interface{}) string {
-	var tmplBytes bytes.Buffer
-
-	err := t.Execute(&tmplBytes, vars)
-	if err != nil {
-		log.Error().Msgf("Error parsing config: %v", err)
-		return ""
+func (p *Pct) renderTarget(targetTmpl string, vars map[string]interface{}, engineName string) string {
+	if engineName == "" {
+		engineName = template.DefaultEngineName
 	}
-	return tmplBytes.String()
-}
-
-func (p *Pct) renderTarget(targetTmpl string, vars map[string]interface{}) string {
-	tmpl := template.New("target").Funcs(tmplFuncs)
-	tmpl, err := tmpl.Parse(targetTmpl)
-	if err != nil {
-		log.Error().Msgf("Error parsing target template: %v", err)
+	eng, ok := template.Get(engineName)
+	if !ok {
+		log.Error().Msgf("unknown template engine: %s", engineName)
 		return targetTmpl
 	}
-	var buf bytes.Buffer
-	err = tmpl.Execute(&buf, vars)
+	out, err := eng.Render(targetTmpl, vars)
 	if err != nil {
 		log.Error().Msgf("Error executing target template: %v", err)
 		return targetTmpl
 	}
-	return buf.String()
+	return out
 }
 
 func findRename(relPath string, entries []RenameEntry) (entry *RenameEntry, isPrefix bool) {
@@ -597,18 +571,18 @@ func findRename(relPath string, entries []RenameEntry) (entry *RenameEntry, isPr
 }
 
 func (p *Pct) FilterFiles(ss []PuppetContentTemplate, test func(PuppetContentTemplate) bool) (ret []PuppetContentTemplate) {
-	for _, s := range ss {
-		if test(s) {
-			ret = append(ret, s)
+	for i := range ss {
+		if test(ss[i]) {
+			ret = append(ret, ss[i])
 		}
 	}
 	return
 }
 
 func (p *Pct) filterNewestVersions(tt []PuppetContentTemplate) (ret []PuppetContentTemplate) {
-	for _, t := range tt {
-		id := t.Id
-		author := t.Author
+	for i := range tt {
+		id := tt[i].Id
+		author := tt[i].Author
 		// Look for templates with the same author and id
 		templates := p.FilterFiles(tt, func(f PuppetContentTemplate) bool { return f.Id == id && f.Author == author })
 		if len(templates) > 1 {
@@ -617,8 +591,8 @@ func (p *Pct) filterNewestVersions(tt []PuppetContentTemplate) (ret []PuppetCont
 			if len(p.FilterFiles(ret, func(f PuppetContentTemplate) bool { return f.Id == id && f.Author == author })) == 0 {
 				// turn the version strings into version objects for sorting and comparison
 				versionsRaw := []string{}
-				for _, t := range templates {
-					versionsRaw = append(versionsRaw, t.Version)
+				for j := range templates {
+					versionsRaw = append(versionsRaw, templates[j].Version)
 				}
 				versions := make([]*version.Version, len(versionsRaw))
 				for i, raw := range versionsRaw {
@@ -636,7 +610,7 @@ func (p *Pct) filterNewestVersions(tt []PuppetContentTemplate) (ret []PuppetCont
 			}
 		} else {
 			// If the author/id template only has 1 entry, it's already the latest version
-			ret = append(ret, t)
+			ret = append(ret, tt[i])
 		}
 	}
 
