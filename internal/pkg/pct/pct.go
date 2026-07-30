@@ -129,8 +129,6 @@ func (p *Pct) GetInfo(templateDirPath string) (PuppetContentTemplateInfo, error)
 // debug log events
 func (p *Pct) List(templatePath string, templateName string) []PuppetContentTemplate {
 	log.Debug().Msgf("Searching %+v for templates", templatePath)
-	// Triple glob to match author/id/version/TemplateConfigFileName
-	// TODO: Make this backward compatible
 	matches, _ := p.IOFS.Glob(templatePath + "/**/**/**/" + TemplateConfigFileName)
 
 	var tmpls []PuppetContentTemplate
@@ -142,17 +140,6 @@ func (p *Pct) List(templatePath string, templateName string) []PuppetContentTemp
 			tmpls = append(tmpls, i)
 		}
 	}
-	// Temporary workaround to find old layout templates
-	oldMatches, _ := p.IOFS.Glob(templatePath + "/**/" + TemplateConfigFileName)
-	for _, file := range oldMatches {
-		log.Debug().Msgf("Found: %+v", file)
-		i := p.readTemplateConfig(file).Template
-		// Do not write id-less configs (ie, invalid, could not parse) to the return
-		if i.Id != "" {
-			tmpls = append(tmpls, i)
-		}
-	}
-
 	if templateName != "" {
 		log.Debug().Msgf("Filtering for: %s", templateName)
 		tmpls = p.FilterFiles(tmpls, func(f PuppetContentTemplate) bool { return f.Id == templateName })
