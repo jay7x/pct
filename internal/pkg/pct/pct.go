@@ -195,7 +195,8 @@ func (*Pct) FormatTemplates(tmpls []PuppetContentTemplate, jsonOutput string) (s
 				})),
 			)
 			table.Header([]string{"DisplayName", "Author", "Name", "Type"})
-			for _, v := range tmpls {
+			for i := range tmpls {
+				v := &tmpls[i]
 				_ = table.Append([]string{v.Display, v.Author, v.Id, v.Type})
 			}
 			_ = table.Render()
@@ -597,18 +598,18 @@ func findRename(relPath string, entries []RenameEntry) (entry *RenameEntry, isPr
 }
 
 func (p *Pct) FilterFiles(ss []PuppetContentTemplate, test func(PuppetContentTemplate) bool) (ret []PuppetContentTemplate) {
-	for _, s := range ss {
-		if test(s) {
-			ret = append(ret, s)
+	for i := range ss {
+		if test(ss[i]) {
+			ret = append(ret, ss[i])
 		}
 	}
 	return
 }
 
 func (p *Pct) filterNewestVersions(tt []PuppetContentTemplate) (ret []PuppetContentTemplate) {
-	for _, t := range tt {
-		id := t.Id
-		author := t.Author
+	for i := range tt {
+		id := tt[i].Id
+		author := tt[i].Author
 		// Look for templates with the same author and id
 		templates := p.FilterFiles(tt, func(f PuppetContentTemplate) bool { return f.Id == id && f.Author == author })
 		if len(templates) > 1 {
@@ -617,8 +618,8 @@ func (p *Pct) filterNewestVersions(tt []PuppetContentTemplate) (ret []PuppetCont
 			if len(p.FilterFiles(ret, func(f PuppetContentTemplate) bool { return f.Id == id && f.Author == author })) == 0 {
 				// turn the version strings into version objects for sorting and comparison
 				versionsRaw := []string{}
-				for _, t := range templates {
-					versionsRaw = append(versionsRaw, t.Version)
+				for j := range templates {
+					versionsRaw = append(versionsRaw, templates[j].Version)
 				}
 				versions := make([]*version.Version, len(versionsRaw))
 				for i, raw := range versionsRaw {
@@ -636,7 +637,7 @@ func (p *Pct) filterNewestVersions(tt []PuppetContentTemplate) (ret []PuppetCont
 			}
 		} else {
 			// If the author/id template only has 1 entry, it's already the latest version
-			ret = append(ret, t)
+			ret = append(ret, tt[i])
 		}
 	}
 

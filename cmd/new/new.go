@@ -124,7 +124,8 @@ func flagCompletion(cmd *cobra.Command, args []string, toComplete string) ([]str
 
 func completeName(match string) []string {
 	var names []string
-	for _, tmpl := range cachedTemplates {
+	for i := range cachedTemplates {
+		tmpl := &cachedTemplates[i]
 		namespacedTemplate := fmt.Sprintf("%s/%s", tmpl.Author, tmpl.Id)
 		if strings.HasPrefix(namespacedTemplate, match) {
 			m := namespacedTemplate + "\t" + tmpl.Display
