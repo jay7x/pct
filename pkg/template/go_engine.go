@@ -7,15 +7,17 @@ import (
 	"github.com/jay7x/pct/pkg/utils"
 )
 
+var goFuncs = gotemplate.FuncMap{
+	"toClassName": utils.ToClassName,
+	"ns2path":     utils.Ns2Path,
+}
+
 type goEngine struct{}
 
 func (e *goEngine) Name() string { return DefaultEngineName }
 
 func (e *goEngine) Render(content string, vars map[string]interface{}) (string, error) {
-	tmpl, err := gotemplate.New("").Funcs(gotemplate.FuncMap{
-		"toClassName": utils.ToClassName,
-		"ns2path":     utils.Ns2Path,
-	}).Parse(content)
+	tmpl, err := gotemplate.New("").Funcs(goFuncs).Parse(content)
 	if err != nil {
 		return "", err
 	}
