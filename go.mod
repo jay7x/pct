@@ -9,7 +9,7 @@ require (
 	github.com/jay7x/pct/docs/md v0.0.0-20251127043134-1037de4b9cf0
 	github.com/json-iterator/go v1.1.12
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/olekukonko/tablewriter v1.1.4
+	github.com/olekukonko/tablewriter v1.1.5
 	github.com/rs/zerolog v1.35.1
 	github.com/spf13/afero v1.15.0
 	github.com/spf13/cobra v1.10.2
